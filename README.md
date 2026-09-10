@@ -1,1 +1,3665 @@
-# Character-Archive
+<!DOCTYPE html>
+<html lang="ko" data-theme="pastel-pink">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C-Log — 캐릭터 로그</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
+<!-- localStorage 전용 버전 (Firebase 제거) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Nanum+Gothic:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+/* 프리미엄 컬러 팔레트 테마 */
+/* 2번째 파일 기준 테마 + 오션 블루 */
+:root[data-theme="pastel-pink"]{--bg:#fff5f7;--white:#fff;--surface:#fff0f4;--surface2:#ffe2eb;--border:#ffd0e0;--border2:#fbaac5;--text:#3a2d32;--muted:#8c6b77;--muted2:#be9ca8;--accent:#ff6b9d;--accent-bg:#ffe8f0;--accent-border:#ffb3ce;--teal:#4ecdc4}
+:root[data-theme="cute-mint"]{--bg:#f0fbf7;--white:#fff;--surface:#e3f7f0;--surface2:#cef2e5;--border:#b2e8d5;--border2:#80d6bb;--text:#223831;--muted:#578073;--muted2:#8cb3a6;--accent:#36b390;--accent-bg:#e6f9f3;--accent-border:#9ee5d0;--teal:#ff8b94}
+:root[data-theme="retro-pixel"]{--bg:#faf6ee;--white:#fff;--surface:#f4ece0;--surface2:#e8dbca;--border:#dab894;--border2:#c49767;--text:#2b2319;--muted:#735d49;--muted2:#9e8772;--accent:#e66a3b;--accent-bg:#fdeee8;--accent-border:#f7c0aa;--teal:#3b9ae6}
+:root[data-theme="ocean-blue"]{--bg:#f0f4f8;--white:#fff;--surface:#e1e8f0;--surface2:#d0dbe7;--border:#bccddf;--border2:#9ab4d0;--text:#102a43;--muted:#486581;--muted2:#627d98;--accent:#1982fc;--accent-bg:#e6f2ff;--accent-border:#b3d7ff;--teal:#009688}
+
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.7;min-height:100vh;transition:all 0.2s;overflow-x:hidden}
+
+.canvas-font-notosans { font-family: 'Noto Sans KR', sans-serif !important; }
+.canvas-font-gowun { font-family: 'Gowun Batang', serif !important; }
+.canvas-font-nanum { font-family: 'Nanum Gothic', sans-serif !important; }
+.canvas-font-notoserif { font-family: 'Noto Serif KR', serif !important; }
+
+/* GLOBAL NAV */
+.nav{display:flex;align-items:center;padding:12px 28px;border-bottom:1px solid var(--border);background:var(--white);position:sticky;top:0;z-index:100;gap:16px}
+.back-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:var(--white);cursor:pointer;color:var(--text);font-weight:bold}
+.logo{font-family:'Gowun Batang',serif;font-size:18px;color:var(--accent);font-weight:700;cursor:pointer}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.breadcrumb span.link{cursor:pointer}
+.breadcrumb span.link:hover{color:var(--accent)}
+.nav-actions{display:flex;align-items:center;gap:8px}
+.theme-selector{padding:6px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--white);color:var(--text);font-size:12px;cursor:pointer}
+
+/* BUTTONS */
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 16px;border-radius:6px;border:1px solid var(--border2);background:var(--white);color:var(--muted);font-size:13px;cursor:pointer;transition:all 0.15s;user-select:none}
+.btn:hover{background:var(--surface);color:var(--text);border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
+
+.main-title-area{display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.main-title{font-family:'Gowun Batang',serif;font-size:22px;font-weight:700;color:var(--text)}
+
+.app-container{max-width:1160px;margin:0 auto;padding:0 16px}
+.layout-three-col{display:grid;grid-template-columns:210px 1fr 240px}
+.layout-main-only{max-width:850px;margin:0 auto;padding:32px 0}
+
+/* SIDEBAR LEFT */
+.sidebar-left{padding:20px 14px 20px 0;border-right:1px solid var(--border);position:sticky;top:53px;height:calc(100vh - 53px);overflow-y:auto}
+.sidebar-label{font-size:11px;color:var(--muted2);font-weight:500;letter-spacing:0.07em;margin-bottom:8px;padding:0 6px;text-transform:uppercase}
+.char-list-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:2px}
+.char-list-item:hover{background:var(--surface);color:var(--text)}
+.char-list-item.active{color:var(--accent);font-weight:500;background:var(--accent-bg)}
+.char-dot{width:6px;height:6px;border-radius:50%;background:var(--border2)}
+.char-dot.active{background:var(--accent)}
+
+.page-view{display:none}
+.page-view.active{display:block}
+
+/* 메인 그리드 */
+.circle-creator-grid{display:flex;flex-wrap:wrap;gap:32px;padding:20px 0}
+.circle-creator-node{display:flex;flex-direction:column;align-items:center;width:90px;cursor:pointer}
+.circle-avatar-wrapper{width:84px;height:84px;border-radius:50%;background:var(--white);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.circle-avatar-placeholder{width:100%;height:100%;background:var(--accent-bg);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Gowun Batang',serif;font-size:24px;font-weight:700}
+.circle-creator-name{font-size:13px;font-weight:700;color:var(--text);margin-top:8px;text-align:center;width:100%;overflow:hidden;text-overflow:ellipsis}
+
+/* 와이드 배너 컨테이너 */
+.profile-banner-container{width:100%;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--white);margin-bottom:24px;position:relative}
+.profile-banner-image-bg{width:100%;height:160px;background:linear-gradient(135deg, var(--accent-bg), var(--accent-border));background-size:cover;background-position:center}
+.profile-banner-info-row{padding:24px 20px;display:flex;align-items:flex-end;gap:18px;margin-top:-40px;position:relative;z-index:2}
+.profile-banner-avatar-box{width:80px;height:80px;border-radius:50%;border:4px solid var(--white);background:var(--white);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.profile-banner-text{padding-bottom:4px;flex:1;margin-top:8px}
+.tiny-more-btn{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:50%;background:rgba(250,250,250,0.85);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;z-index:10}
+
+/* 폴더 장르 카드 리스트 */
+.folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.folder-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:18px;cursor:pointer;position:relative;display:flex;flex-direction:column;justify-content:space-between}
+.folder-card-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
+.folder-card-desc{font-size:13px;color:var(--muted);line-height:1.4}
+
+/* CHARACTER CARD */
+.char-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-top:20px}
+.char-card{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer}
+.char-card-thumb{width:100%;height:110px;background:linear-gradient(135deg,var(--accent-bg),var(--surface2));display:flex;align-items:center;justify-content:center;overflow:hidden}
+.char-card-symbol-txt{font-family:'Gowun Batang',serif;font-size:32px;color:var(--accent)}
+.char-card-body{padding:12px}
+.char-card-name{font-size:14px;font-weight:700;text-align:center}
+
+.empty-placeholder-box {display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;width:100%;text-align:center;color:var(--muted2);border:1px dashed var(--border2);border-radius:12px;background:var(--white)}
+
+.cover{width:100%;height:140px;border-radius:10px;background:linear-gradient(135deg,var(--accent-bg) 0%,var(--surface2) 100%);margin-bottom:-44px;position:relative;background-size:cover;background-position:center}
+.banner-height-control{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.7);color:#fff;padding:6px;border-radius:6px;font-size:11px;display:none;align-items:center;gap:6px;z-index:10}
+
+.char-profile-header{display:flex;align-items:flex-end;gap:14px;margin-bottom:24px}
+.char-avatar-box{width:76px;height:76px;border-radius:10px;background:linear-gradient(135deg,var(--accent-bg),var(--surface2));border:3px solid var(--white);display:flex;align-items:center;justify-content:center;font-family:'Gowun Batang',serif;font-size:26px;color:var(--accent);z-index:1;cursor:pointer;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
+
+.divider{display:flex;align-items:center;gap:10px;margin:28px 0 14px;color:var(--muted2);font-size:12px;font-weight:500;letter-spacing:0.06em}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* 기본 테이블 명세 (직관적인 항 상시 노출식 개편) */
+.info-table{width:100%;border-collapse:collapse;font-size:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px;background:var(--white)}
+.info-table tr{border-bottom:1px solid var(--border);position:relative}
+.info-table th{width:130px;text-align:left;padding:10px 14px;color:var(--muted);font-weight:500;background:var(--surface);font-size:13px}
+.info-table td{padding:10px 14px;color:var(--text);min-width:100px}
+
+/* [피드백 반영] 행 추가/제외를 누구나 바로 찾을 수 있도록 우측 고정 배지형 UI 개편 */
+.row-control-btn-wrap { align-items:center; gap:4px; }
+.row-ctrl-badge { padding:2px 6px; font-size:11px; border-radius:4px; border:1px solid var(--border2); background:var(--white); cursor:pointer; font-weight:bold; white-space:nowrap; }
+.row-ctrl-badge.add { color:var(--teal); border-color:var(--teal); }
+.row-ctrl-badge.add:hover { background:var(--accent-bg); }
+.row-ctrl-badge.del { color:#dc2626; border-color:#dc2626; }
+.row-ctrl-badge.del:hover { background:#fef2f2; }
+
+.prose{font-size:14px;color:var(--text);line-height:1.8;min-height:40px;padding:8px;border-radius:6px}
+/* 본문 인라인 이미지 삭제 버튼: 기본 숨김, 편집 모드에서만 표시 */
+.inline-img-del-btn { display:none !important; }
+/* 명언 블록 삭제 버튼 편집 모드에서만 표시 */
+.quote-del-btn { display:none !important; }
+.edit-mode-active .quote-del-btn { display:block !important; }
+
+.phone-app-gallery .icon-wrap { background:linear-gradient(135deg,var(--accent),var(--teal)); }
+
+.edit-mode-active .inline-img-del-btn { display:inline-block !important; }
+.edit-mode-active .inline-img-wrap img { outline:2px dashed transparent; transition:outline 0.15s; }
+.edit-mode-active .inline-img-wrap img:hover { outline:2px dashed var(--accent); }
+
+/* ==================== 📁 하위 폴더 분리형 스포일러 가림막 커포넌트 ==================== */
+.spoiler-container { border: 1px dashed #c24070; background: #fff5f8; border-radius: 8px; padding: 14px; margin: 14px 0; position: relative; }
+.spoiler-blind { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, #2d2327, #4a353d); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; z-index: 20; transition: opacity 0.25s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+.spoiler-blind-title { font-weight: bold; font-size: 14px; letter-spacing: 0.05em; color: #ffb3cb; margin-bottom: 2px; }
+.spoiler-blind-desc { font-size: 11px; opacity: 0.75; }
+.spoiler-content { opacity: 0.2; pointer-events: none; transition: opacity 0.2s; }
+.spoiler-container.unveiled .spoiler-blind { display: none !important; }
+.spoiler-container.unveiled .spoiler-content { opacity: 1 !important; pointer-events: auto !important; }
+.spoiler-ctrl-bar { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
+.spoiler-ctrl-btn { font-size: 11px; padding: 3px 10px; border-radius: 4px; border: 1px solid #c24070; background: #fff0f4; color: #c24070; cursor: pointer; font-weight: bold; }
+.spoiler-ctrl-btn:hover { background: #ffe0e8; }
+.spoiler-ctrl-btn.del { border-color: #dc2626; background: #fff0f0; color: #dc2626; }
+.spoiler-ctrl-btn.del:hover { background: #fde8e8; }
+
+/* ==================== 📊 방사형 차트 레이아웃 그래픽스 컴포넌트 ==================== */
+.radar-chart-outer-box { display: flex; flex-direction: column; align-items: center; background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 18px 0; gap: 16px; }
+.radar-chart-wrapper { width: 240px; height: 240px; }
+.radar-chart-editor-panel { display: none; background: var(--surface); padding: 14px; border-radius: 8px; width: 100%; max-width: 460px; flex-direction: column; gap: 8px; font-size: 12px; }
+.radar-stat-row { display: grid; grid-template-columns: 80px 1fr 45px; align-items: center; gap: 10px; }
+
+/* ==================== 나무위키형 정밀 실시간 주석 스탬프 시스템 ==================== */
+.wiki-footnote-ref { color: var(--accent); font-size: 11px; font-weight: bold; cursor: pointer; margin: 0 2px; text-decoration: none; display: inline-block; vertical-align: super; position: relative; }
+.wiki-footnote-ref:hover { text-decoration: underline; }
+
+/* 각주 팝업 (JS 방식으로 교체 - CSS :after 제거) */
+#footnoteTooltipPopup {
+  position: fixed; background: rgba(20,20,20,0.95); color: #fff; padding: 7px 14px;
+  border-radius: 6px; font-size: 12px; max-width: 300px; line-height: 1.5;
+  z-index: 9999; pointer-events: none; display: none; box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  white-space: normal; word-break: keep-all;
+}
+
+.footnote-area-list { margin-top: 32px; padding: 16px; border-top: 1px dashed var(--border2); font-size: 13px; color: var(--muted); background: var(--white); border-radius: 8px; }
+.footnote-item { display: flex; gap: 8px; margin-bottom: 5px; align-items: flex-start; }
+.footnote-num { color: var(--accent); font-weight: bold; text-decoration: none; cursor: pointer; }
+.footnote-num:hover { text-decoration: underline; }
+.footnote-text { color: var(--text); }
+
+/* 전신 비주얼 빈 칸 */
+.full-shot-box { display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px dashed var(--border2); border-radius:10px; background:var(--surface); overflow:hidden; }
+
+/* ==================== 관계도 드래그 캔버스 엔진 ==================== */
+.rel-system-outer{width:100%;margin:20px 0;position:relative}
+.rel-system-header{font-size:14px;font-weight:bold;color:var(--accent);margin-bottom:10px}
+.rel-toolbar{display:none;gap:8px;margin-bottom:10px}
+.rel-canvas-viewport{width:100%;height:460px;position:relative;overflow:hidden;user-select:none;background:transparent}
+.rel-svg-layer{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:3;overflow:visible}
+
+.rel-node-circle{width:70px;height:70px;border-radius:50%;background:var(--white);border:3px solid var(--border2);position:absolute;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,0.08)}
+.rel-node-avatar-slot{width:100%;height:100%;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--surface);cursor:pointer}
+.rel-node-avatar-slot img{width:100%;height:100%;object-fit:cover}
+.rel-node-text-label{position:absolute;bottom:-24px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:700;white-space:nowrap;color:var(--text);background:var(--white);padding:2px 6px;border-radius:4px;border:1px solid var(--border)}
+.rel-node-x-btn{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#dc2626;color:#fff;font-size:10px;font-weight:bold;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;border:none}
+.rel-node-drag-handle{position:absolute;bottom:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;display:none;align-items:center;justify-content:center;cursor:grab;z-index:12;box-shadow:0 2px 5px rgba(0,0,0,0.2)}
+
+/* EDITOR ENGINE TOOLBAR */
+.editor-toolbar{padding:8px;border:1px solid var(--border);background:var(--white);border-radius:8px;margin-bottom:14px;display:none;gap:6px;flex-wrap:wrap;align-items:center;position:sticky;top:54px;z-index:90;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.editor-toolbar button, .editor-toolbar select{background:none;border:none;padding:4px 8px;font-size:12px;cursor:pointer;border-radius:4px;color:var(--text);font-weight:500;border:1px solid transparent}
+.editor-toolbar button:hover, .editor-toolbar select:hover{background:var(--surface);border-color:var(--border)}
+.color-picker-wrapper{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);margin-left:4px;padding-left:6px;border-left:1px solid var(--border)}
+.color-input{width:22px;height:22px;border:none;padding:0;background:none;cursor:pointer}
+.edit-active{outline:2px dashed var(--accent) !important;background:var(--white) !important;min-height:30px}
+
+/* SIDEBAR RIGHT */
+.sidebar-right{padding:20px 0 20px 14px;border-left:1px solid var(--border);position:sticky;top:53px;height:calc(100vh - 53px);overflow-y:auto;display:flex;flex-direction:column;justify-content:space-between}
+.toc-container{display:flex;flex-direction:column;gap:2px}
+.toc-link-wrapper{display:flex;align-items:center;position:relative;border-radius:4px;transition:background 0.1s}
+.toc-link-wrapper.drag-over{background:var(--accent-bg);outline:1px dashed var(--accent)}
+.toc-link-wrapper.dragging{opacity:0.4}
+.toc-drag-handle{font-size:10px;cursor:grab;padding:0 4px;color:var(--muted2);display:none;user-select:none}
+.toc-drag-handle:active{cursor:grabbing}
+.toc-link{font-size:12px;color:var(--muted);padding:5px 8px;border-left:2px solid transparent;display:block;cursor:pointer;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.toc-link.active{color:var(--accent);border-left-color:var(--accent);font-weight:500}
+.toc-edit-btn, .toc-del-btn{font-size:10px;cursor:pointer;padding:0 4px;display:none}
+.toc-edit-btn{color:var(--teal)}
+.toc-del-btn{color:#dc2626}
+
+/* MODAL DESIGN */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(26,25,22,0.45);backdrop-filter:blur(5px);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-window{background:var(--white);border-radius:14px;border:1px solid var(--border);box-shadow:0 16px 48px rgba(0,0,0,0.16);width:100%;max-width:540px;padding:32px;display:flex;flex-direction:column;gap:20px}
+.modal-title{font-family:'Gowun Batang',serif;font-size:19px;font-weight:700;color:var(--text);border-bottom:1px solid var(--surface);padding-bottom:10px}
+.modal-body-form{display:flex;flex-direction:column;gap:16px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.form-input, .form-select{width:100%;padding:11px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:inherit;font-size:14px}
+.form-input:focus, .form-select:focus{outline:none;border-color:var(--accent);background:var(--white)}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:12px;border-top:1px solid var(--surface);padding-top:16px}
+
+/* ── 핸드폰 모달 ── */
+.phone-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.phone-frame{width:375px;height:710px;border-radius:44px;background:#1a1a1a;box-shadow:0 0 0 8px #2a2a2a,0 30px 80px rgba(0,0,0,0.7);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.phone-close-btn{position:absolute;top:-44px;right:0;background:none;border:none;color:#fff;font-size:24px;cursor:pointer;opacity:0.8}
+.phone-screen{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.phone-home{flex:1;display:flex;flex-direction:column;background-size:cover;background-position:center}
+.phone-home-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.2);pointer-events:none}
+.phone-status-bar{position:relative;z-index:1;display:flex;justify-content:space-between;padding:14px 24px 6px;font-size:12px;color:#fff;font-weight:600}
+.phone-home-time{position:relative;z-index:1;text-align:center;padding:24px 0 8px;color:#fff}
+.phone-home-time .ph-time{font-size:56px;font-weight:200;line-height:1}
+.phone-home-time .ph-date{font-size:14px;opacity:0.85;margin-top:6px}
+.phone-apps{position:relative;z-index:1;display:flex;justify-content:center;gap:28px;padding:0 30px;margin-top:auto;margin-bottom:50px}
+.phone-app-icon{display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer}
+.phone-app-icon .icon-wrap{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;backdrop-filter:blur(10px);transition:transform 0.15s}
+.phone-app-icon:hover .icon-wrap{transform:scale(1.08)}
+.phone-app-icon .icon-label{font-size:12px;color:#fff;font-weight:500;text-shadow:0 1px 4px rgba(0,0,0,0.6)}
+.phone-app-msg .icon-wrap{background:linear-gradient(135deg,#2ecc71,#1a9950)}
+.phone-app-album .icon-wrap{background:linear-gradient(135deg,#f39c12,#d68910)}
+.phone-home-edit{position:relative;z-index:1;text-align:center;padding-bottom:16px}
+.phone-home-edit button{background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:7px 18px;border-radius:20px;font-size:12px;cursor:pointer;backdrop-filter:blur(4px)}
+.msg-app{flex:1;display:flex;flex-direction:column;background:#f5f5f5;overflow:hidden}
+.msg-header{display:flex;align-items:center;padding:14px 14px;background:#fff;border-bottom:1px solid #e0e0e0;gap:10px;flex-shrink:0}
+.msg-back-btn{background:none;border:none;font-size:20px;cursor:pointer;color:#333;padding:2px 6px;line-height:1}
+.msg-header-title{font-size:16px;font-weight:700;flex:1;color:#1a1916}
+.msg-add-btn{background:var(--accent);color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;white-space:nowrap}
+.msg-room-list{flex:1;overflow-y:auto}
+.msg-room-item{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;background:#fff;border-bottom:1px solid #f0f0f0;transition:background 0.1s}
+.msg-room-item:hover{background:#f9f9f9}
+.msg-room-avatar{width:58px;height:58px;border-radius:50%;background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden}
+.msg-room-avatar img{width:100%;height:100%;object-fit:cover}
+.msg-room-info{flex:1;min-width:0}
+.msg-room-name{font-size:14px;font-weight:600;color:#1a1916}
+.msg-room-preview{font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.chat-room{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.chat-header{display:flex;align-items:center;padding:11px 12px;gap:8px;flex-shrink:0}
+.chat-header-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;overflow:hidden;background:rgba(255,255,255,0.25)}
+.chat-header-avatar img{width:100%;height:100%;object-fit:cover}
+.chat-header-name{font-size:15px;font-weight:700;flex:1;color:#fff}
+/* 채팅 메시지 영역 */
+.chat-messages{flex:1;overflow-y:auto;padding:12px 10px 6px;display:flex;flex-direction:column;gap:2px}
+.chat-msg-row{display:flex;align-items:flex-end;gap:5px;max-width:88%;margin-bottom:2px}
+.chat-msg-row.mine{align-self:flex-end;flex-direction:row-reverse}
+.chat-msg-row.theirs{align-self:flex-start}
+.chat-msg-avatar{width:36px;height:36px;border-radius:50%;background:#ddd;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;overflow:hidden;align-self:flex-end;margin-bottom:0}
+.chat-msg-avatar img{width:100%;height:100%;object-fit:cover}
+.chat-msg-bubble{padding:8px 12px;border-radius:18px;font-size:13px;line-height:1.5;word-break:break-word;position:relative;max-width:210px}
+.chat-msg-bubble img{max-width:100%;border-radius:10px;display:block}
+.chat-msg-row.mine .chat-msg-bubble{border-bottom-right-radius:4px;color:#fff}
+.chat-msg-row.theirs .chat-msg-bubble{border-bottom-left-radius:4px;background:rgba(255,255,255,0.95);color:#1a1916}
+.chat-msg-meta{display:flex;flex-direction:column-reverse;align-items:flex-end;justify-content:flex-start;gap:2px;align-self:flex-end;padding-bottom:2px}
+.chat-msg-row.theirs .chat-msg-meta{align-items:flex-start}
+.chat-msg-time{font-size:10px;color:rgba(0,0,0,0.38);white-space:nowrap}
+.chat-msg-del{font-size:11px;opacity:0;cursor:pointer;color:#ef4444;transition:opacity 0.2s;user-select:none}
+.chat-msg-row:hover .chat-msg-del{opacity:1}
+.chat-name-sender{font-size:11px;color:rgba(0,0,0,0.45);margin-bottom:2px;padding-left:4px}
+.chat-date-divider{display:flex;align-items:center;gap:8px;margin:10px 0;color:rgba(0,0,0,0.38);font-size:11px;cursor:pointer;user-select:none}
+.chat-date-divider::before,.chat-date-divider::after{content:'';flex:1;height:1px;background:rgba(0,0,0,0.13)}
+.chat-date-divider:hover{color:rgba(0,0,0,0.6)}
+.chat-input-area{padding:6px 8px;border-top:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.95);backdrop-filter:blur(4px);flex-shrink:0}
+.chat-toolbar{display:flex;gap:5px;padding:0 0 5px;flex-wrap:wrap;align-items:center}
+.chat-toolbar select{font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#333}
+.chat-toolbar input[type=color]{width:26px;height:24px;border:1px solid #ddd;border-radius:6px;cursor:pointer;padding:1px 2px}
+.chat-toolbar label.img-upload-label{font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#333;cursor:pointer;white-space:nowrap;display:flex;align-items:center}
+.chat-toolbar label.img-upload-label:hover{background:#f5f5f5}
+.chat-input-row{display:flex;gap:7px;align-items:flex-end}
+.chat-input-box{flex:1;background:#fff;border:1px solid #ddd;border-radius:20px;padding:8px 14px;font-size:13px;outline:none;resize:none;max-height:80px;font-family:inherit;color:#1a1916;line-height:1.4}
+.chat-send-btn{width:36px;height:36px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;color:#fff;transition:transform 0.1s}
+.chat-send-btn:hover{transform:scale(1.08)}
+.chat-settings-wrap{flex:1;overflow-y:auto;padding:0;background:#f5f5f5}
+.chat-settings-section{background:#fff;margin-bottom:8px;padding:14px 16px}
+.chat-settings-section-title{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px}
+.settings-row{margin-bottom:10px}
+.settings-row label{font-size:12px;color:#888;display:block;margin-bottom:4px}
+.settings-row input,.settings-row select,.settings-row textarea{width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff;color:#1a1916;font-family:inherit}
+.settings-row input[type=color]{padding:2px 4px;height:34px;cursor:pointer}
+.settings-file-label{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid #ddd;border-radius:8px;font-size:12px;color:#555;cursor:pointer;background:#fff;margin-top:4px}
+.settings-file-label:hover{background:#f5f5f5}
+.settings-img-preview{width:48px;height:48px;border-radius:8px;object-fit:cover;margin-top:6px;display:block}
+.settings-save-btn{width:calc(100% - 32px);margin:0 16px 16px;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:13px;cursor:pointer;font-weight:600}
+.phone-modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.45);z-index:50;display:flex;align-items:flex-end;justify-content:center;border-radius:44px;overflow:hidden}
+.phone-modal-sheet{background:#fff;border-radius:20px 20px 0 0;padding:20px 16px 28px;width:100%;display:flex;flex-direction:column;gap:8px}
+.phone-modal-title{font-size:15px;font-weight:700;color:#1a1916;text-align:center;margin-bottom:4px}
+.phone-modal-desc{font-size:13px;color:#888;text-align:center;margin-bottom:8px}
+.phone-modal-input{width:100%;padding:10px 14px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;color:#1a1916;font-family:inherit;outline:none;background:#f9f9f9}
+.phone-modal-input:focus{border-color:var(--accent);background:#fff}
+.phone-modal-btn{width:100%;padding:12px;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer}
+.phone-modal-btn.confirm{background:var(--accent);color:#fff}
+.phone-modal-btn.danger{background:#ef4444;color:#fff}
+.phone-modal-btn.cancel{background:#f0f0f0;color:#555}
+/* 앨범 */
+.album-app{flex:1;display:flex;flex-direction:column;background:#fff;overflow:hidden}
+.album-profile-banner{width:100%;height:90px;background-size:cover;background-position:center;position:relative;flex-shrink:0}
+.album-profile-row{display:flex;align-items:center;gap:10px;padding:8px 14px 8px;position:relative;z-index:2;margin-bottom:4px;background:#fff;border-bottom:1px solid #f0f0f0}
+.album-avatar{width:58px;height:58px;border-radius:50%;border:3px solid #fff;background:#e8e8e8;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.12)}
+.album-avatar img{width:100%;height:100%;object-fit:cover}
+.album-profile-info{flex:1;padding-bottom:4px;min-width:0}
+.album-profile-name{font-size:15px;font-weight:700;color:#1a1916}
+.album-profile-bio{font-size:12px;color:#888;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.album-edit-btn{flex-shrink:0;padding:5px 12px;border:1px solid #ddd;border-radius:20px;background:#fff;font-size:12px;color:#333;cursor:pointer;align-self:flex-end;margin-bottom:4px}
+.album-edit-btn:hover{background:#f5f5f5}
+.album-grid-wrap{flex:1;overflow-y:auto;position:relative}
+.album-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.album-grid-cell{aspect-ratio:1;overflow:hidden;background:#f0f0f0;cursor:pointer;position:relative}
+.album-grid-cell img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.2s}
+.album-grid-cell:hover img{transform:scale(1.05)}
+.album-add-post-btn{position:absolute;bottom:12px;right:12px;background:var(--accent);color:#fff;border:none;border-radius:50%;width:42px;height:42px;font-size:22px;cursor:pointer;box-shadow:0 2px 8px rgba(107,79,216,0.4);display:flex;align-items:center;justify-content:center;z-index:5}
+.post-detail{flex:1;display:flex;flex-direction:column;background:#fff;overflow:hidden}
+.post-slides{position:relative;width:100%;aspect-ratio:1;background:#000;flex-shrink:0;overflow:hidden}
+.post-slides-inner{display:flex;height:100%;transition:transform 0.3s}
+.post-slide-img{min-width:100%;height:100%;object-fit:cover;display:block}
+.post-slide-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.35);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.post-slide-arrow.left{left:8px}
+.post-slide-arrow.right{right:8px}
+.post-slide-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px}
+.post-slide-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.55)}
+.post-slide-dot.active{background:#fff}
+.post-body{flex:1;overflow-y:auto;padding:12px 14px}
+.post-actions{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.post-action-btn{background:none;border:none;font-size:20px;cursor:pointer;padding:0;line-height:1;transition:transform 0.15s}
+.post-action-btn:hover{transform:scale(1.2)}
+.post-action-count{font-size:12px;font-weight:600;color:#1a1916;margin-right:8px}
+.post-desc{font-size:13px;color:#1a1916;line-height:1.5;margin-bottom:10px}
+.post-comments{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.post-comment{font-size:12px;color:#1a1916;line-height:1.4}
+.post-comment-author{font-weight:700;margin-right:5px}
+.post-comment-reply-btn{font-size:11px;color:#888;cursor:pointer;margin-left:6px}
+.post-comment-reply-btn:hover{color:var(--accent)}
+.post-reply{font-size:12px;color:#555;padding-left:14px;margin-top:3px;border-left:2px solid #e8e8e8}
+.post-comment-del{font-size:11px;color:#ccc;cursor:pointer;margin-left:4px}
+.post-comment-del:hover{color:#ef4444}
+.post-comment-input-row{display:flex;gap:6px;align-items:center;padding:8px 0 2px;border-top:1px solid #f0f0f0}
+.post-comment-input-area{padding:8px 0 2px;border-top:1px solid #f0f0f0;display:flex;flex-direction:column;gap:6px}
+.post-comment-submit-full{width:100%;padding:9px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer}
+.post-comment-submit-full:hover{background:#5a3fc7}
+.post-comment-input{flex:1;border:none;outline:none;font-size:13px;color:#1a1916;font-family:inherit;background:transparent}
+.post-comment-submit{background:none;border:none;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer}
+
+/* 마우스 오버 애니메이션 */.circle-creator-node:hover .circle-avatar-wrapper{transform:scale(1.05) rotate(-2deg);border-color:var(--accent);box-shadow:0 6px 16px rgba(0,0,0,.08)}.folder-card,.char-card{transition:transform .18s,box-shadow .18s,border-color .18s}.folder-card:hover,.char-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.06);border-color:var(--accent)}.btn:hover{transform:translateY(-1px)}.tiny-more-btn:hover,.back-btn:hover{transform:scale(1.05);cursor:pointer}.back-btn{min-width:66px;padding:7px 10px;border-radius:10px;transition:transform .15s,background .15s}.phone-app-icon .icon-wrap{transition:transform .18s,box-shadow .18s}.phone-app-icon:hover .icon-wrap{transform:scale(1.08) rotate(-2deg);box-shadow:0 6px 14px rgba(0,0,0,.12)}.gallery-cell:hover img{transform:scale(1.05)}
+/* C-Log PHOTO — Samsung Gallery inspired, touch/mouse friendly */
+.sg-gallery-home,.sg-gallery-viewer{height:100%;display:flex;flex-direction:column;background:#fff;color:#171717;overflow:hidden}
+.sg-gallery-header{flex:none;background:#fff;border-bottom:1px solid #eee;z-index:3}
+.sg-header-row{height:58px;display:flex;align-items:center;padding:0 9px;gap:5px}.sg-header-row>b{font-size:24px;letter-spacing:-1px}.sg-header-camera{display:none}.sg-header-spacer{flex:1}
+.sg-header-back,.sg-header-icon,.sg-viewer-back{border:0;background:transparent;cursor:pointer;color:#222}.sg-header-back{font-size:37px;line-height:1;width:44px;height:46px;border-radius:50%}.sg-header-back:hover{background:#f3f3f3}.sg-header-icon{font-size:28px;width:42px;height:42px;border-radius:50%}.sg-header-icon:hover{background:#f3f3f3}
+.sg-gallery-content{flex:1;min-height:0;overflow:auto;padding:8px 6px 8px}.sg-photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}.sg-photo-card{position:relative;display:block;width:100%;border:0;padding:0;background:#eee;aspect-ratio:1/1;overflow:hidden;cursor:pointer;touch-action:manipulation}.sg-photo-card img{display:block;width:100%;height:100%;object-fit:cover;image-rendering:auto;-webkit-user-drag:none;user-select:none;content-visibility:auto;contain:paint}.sg-photo-card:active{opacity:.82}.sg-like-badge{position:absolute;right:7px;bottom:6px;color:#fff;font-size:17px;text-shadow:0 1px 5px #000;display:none}.sg-like-badge.show{display:block}
+.sg-album-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px 10px}.sg-album-card{border:0;background:none;padding:0;text-align:left;cursor:pointer}.sg-album-cover{position:relative;aspect-ratio:1/1;border-radius:13px;overflow:hidden;background:#f0f0f0}.sg-album-cover img{width:100%;height:100%;object-fit:cover;display:block}.sg-album-cover>span{height:100%;display:flex;align-items:center;justify-content:center;font-size:34px;color:#aaa}.sg-album-name{font-size:14px;font-weight:700;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sg-album-count{font-size:10px;color:#999;margin-top:2px}.sg-favorite-main{margin:4px 0 12px;border-radius:16px;overflow:hidden;background:#eee;position:relative;aspect-ratio:1.35/1}.sg-favorite-main button{display:block;width:100%;height:100%;padding:0;border:0;background:none;cursor:pointer}.sg-favorite-main img{width:100%;height:100%;object-fit:cover;display:block}.sg-favorite-main-label{position:absolute;left:12px;bottom:10px;padding:5px 9px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:700;pointer-events:none}.sg-empty{grid-column:1/-1;text-align:center;padding:80px 20px;color:#999;font-size:13px;line-height:1.8}
+.sg-bottom-tabs{height:64px;flex:none;border-top:1px solid #e9e9e9;background:#fff;display:flex;align-items:stretch;justify-content:space-around;z-index:5;padding-bottom:2px}.sg-bottom-tabs button{flex:1;border:0;background:none;color:#aaa;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font-size:10px}.sg-bottom-tabs button span{font-size:21px;line-height:22px}.sg-bottom-tabs button b{font-size:10px}.sg-bottom-tabs button.active{color:#111}
+.sg-tab-icon{width:24px;height:24px;display:block}.sg-tab-icon svg{width:100%;height:100%;display:block}.sg-bottom-tabs button.active .sg-tab-icon{transform:translateY(-1px)}
+.pair-dday-toggle{width:24px;height:24px;border:1px solid var(--border);border-radius:7px;background:var(--white);color:var(--text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;position:relative;flex:none;box-sizing:border-box}.pair-dday-toggle span{display:block;width:7px;height:7px;border-right:1.8px solid currentColor;border-bottom:1.8px solid currentColor;transform:rotate(45deg) translate(-1px,-1px);transform-origin:center}.pair-dday-toggle.is-collapsed span{transform:rotate(-45deg) translate(-1px,-1px)}.pair-dday-toggle:hover{background:var(--surface);border-color:var(--accent)}
+.sg-picker-panel{max-height:72%;overflow:auto}.sg-picker-list{display:flex;flex-direction:column;gap:7px;margin:10px 0}.sg-picker-option{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid #e6e6e6;border-radius:12px;background:#fafafa;text-align:left;cursor:pointer;font-weight:700}.sg-picker-option small{margin-left:auto;color:#999;font-weight:500}.sg-picker-folder{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:#f0f0f0;color:#777;font-size:17px}.sg-add-cancel{width:100%;border:1px solid #ddd;background:#fff;border-radius:10px;padding:10px;cursor:pointer;font-weight:700}.sg-create-album-cover{display:flex;align-items:center;justify-content:center;background:#fafafa;border:1px dashed #ccc}.sg-create-album-cover span{font-size:34px;color:#aaa}.sg-album-empty-icon{display:flex!important;align-items:center;justify-content:center;width:100%;height:100%;font-size:34px;color:#bbb}
+.sg-folder-title{display:flex;flex-direction:column;line-height:1.1}.sg-folder-title b{font-size:18px}.sg-folder-title span{font-size:10px;color:#999;margin-top:4px}
+.sg-add-sheet{position:absolute;inset:0;background:rgba(0,0,0,.25);z-index:20;display:flex;align-items:flex-end}.sg-add-panel{width:100%;background:#fff;border-radius:18px 18px 0 0;padding:18px 16px 16px;box-shadow:0 -8px 25px rgba(0,0,0,.15)}.sg-add-title{font-size:18px;font-weight:800}.sg-add-desc{font-size:11px;color:#888;margin:5px 0 14px}.sg-add-file{display:flex;align-items:center;justify-content:center;height:52px;border:1px dashed #bbb;border-radius:12px;background:#fafafa;font-weight:700;cursor:pointer}.sg-add-file input{display:none}.sg-add-names{font-size:11px;color:#777;min-height:18px;margin-top:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sg-add-buttons{display:flex;gap:8px;margin-top:14px}.sg-add-buttons button{flex:1;border:1px solid #ddd;background:#fff;border-radius:10px;padding:10px;cursor:pointer;font-weight:700}.sg-add-buttons button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.sg-viewer-top{height:56px;display:flex;align-items:center;padding:0 8px;background:#fff;border-bottom:1px solid #eee;flex:none;z-index:30}.sg-viewer-back{font-size:20px;font-weight:700;width:auto;min-width:72px;height:44px;border-radius:12px;padding:0 9px;white-space:nowrap}.sg-viewer-back:hover{background:#f3f3f3}.sg-viewer-title{flex:1;display:flex;align-items:center;gap:8px}.sg-viewer-title b{font-size:15px}.sg-viewer-title span{display:none}
+.sg-viewer-stage{flex:1;min-height:0;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;touch-action:none;cursor:default}.sg-viewer-stage img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;transform-origin:center;user-select:none;-webkit-user-drag:none;image-rendering:auto;will-change:transform}.sg-viewer-stage.zoomed{cursor:grab}.sg-viewer-stage.zoomed img{max-width:none;max-height:none}.sg-viewer-stage.dragging{cursor:grabbing}.sg-viewer-stage.fullscreen{position:absolute;inset:0;z-index:50;background:#fff}.sg-viewer-stage.fullscreen img{max-width:100%;max-height:100%}.sg-gallery-viewer.is-fullscreen .sg-viewer-top,.sg-gallery-viewer.is-fullscreen .sg-thumb-row,.sg-gallery-viewer.is-fullscreen .sg-viewer-actions{display:none!important}.sg-gallery-viewer.initial-clean .sg-viewer-stage{background:#fff}
+.sg-thumb-row{will-change:scroll-position;display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding:8px;background:#fff;flex:none;scroll-snap-type:none;position:relative;z-index:40;touch-action:pan-x;pointer-events:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-behavior:auto}.sg-thumb-row::-webkit-scrollbar{height:5px}.sg-thumb{width:60px;height:60px;flex:0 0 60px;padding:0;border:2px solid transparent;border-radius:7px;overflow:hidden;background:#eee;cursor:pointer;scroll-snap-align:none;pointer-events:auto;touch-action:pan-y;user-select:none}.sg-thumb.active{border-color:#fff}.sg-thumb img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}.sg-viewer-actions{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:#fff;flex:none;z-index:21}.sg-viewer-action{width:44px;height:44px;border:0;background:transparent;color:#222;font-size:27px;cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center}.sg-viewer-action:hover{background:rgba(255,255,255,.12)}.sg-viewer-action.liked{color:#ff6b9d}
+
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <button class="back-btn" id="globalBackBtn" onclick="handleBack()" title="이전 화면으로 돌아가기">&larr; <span style="font-size:12px;font-weight:700">뒤로</span></button>
+  <span class="logo" onclick="navigate('main')">C-Log</span>
+  <div class="breadcrumb" id="breadcrumbContainer"></div>
+  <div class="nav-actions">
+    <select class="theme-selector" id="globalThemeSelector" onchange="changeGlobalTheme(this.value)">
+      <option value="pastel-pink">🎀 파스텔 핑크</option><option value="cute-mint">🌿 큐트 민트</option><option value="retro-pixel">📻 레트로 픽셀</option><option value="ocean-blue">🌊 오션 블루</option>
+    </select>
+    <button class="btn" id="globalPhoneBtn" style="display:none;font-size:16px;padding:6px 10px" onclick="openPhone()" title="핸드폰">📱</button>
+    <span id="saveStatusIndicator" style="font-size:12px; color:var(--muted); min-width:80px; text-align:right; transition:color 0.2s"></span>
+    <button class="btn primary" id="globalCharacterEditBtn" style="display:none" onclick="toggleCharacterEditMode()">편집 하기</button>
+  </div>
+</nav>
+
+<div class="app-container">
+  
+  <div id="view-main" class="page-view active layout-main-only">
+    <div class="main-title-area">
+      <h1 class="main-title">창작자 그룹 선택</h1>
+      <button class="btn primary" onclick="openNewCreatorFormPopup()">＋ 창작자 생성</button>
+    </div>
+    <div class="circle-creator-grid" id="mainCircleCreatorGrid"></div>
+  </div>
+
+  <div id="view-creator" class="page-view layout-main-only">
+    <div class="profile-banner-container">
+      <div class="tiny-more-btn" onclick="openCreatorEditModal()">⁝</div>
+      <div class="profile-banner-image-bg" id="creatorViewBannerBg"></div>
+      <div class="profile-banner-info-row">
+        <div class="profile-banner-avatar-box" id="creatorViewAvatarBox"></div>
+        <div class="profile-banner-text">
+          <h2 class="main-title" style="text-align:left; margin:0" id="creatorViewName">이름</h2>
+          <p style="font-size:13px; color:var(--muted); margin-top:6px" id="creatorViewBio">소개글</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="main-title-area" style="border:none; margin-bottom:10px">
+      <div class="sidebar-label" style="padding:0; margin:0">📁 보유 세계관 / 장르 카테고리</div>
+      <button class="btn primary" onclick="openFolderAddModal()">＋ 폴더 추가</button>
+    </div>
+    <div class="folder-grid" id="folderGridContainer"></div>
+    <div class="main-title-area pair-dday-section-head" style="margin-top:34px;margin-bottom:12px"><div><div class="sidebar-label" style="padding:0;margin:0;display:flex;align-items:center;gap:8px"><button type="button" id="pairDdayToggleBtn" class="pair-dday-toggle" onclick="togglePairDdays()" title="페어 D-DAY 목록 표시/숨기기" aria-label="페어 D-DAY 목록 표시/숨기기"><span id="pairDdayToggleIcon" aria-hidden="true"></span></button><span>💙 페어 D-DAY</span></div><div style="font-size:12px;color:var(--muted);margin-top:4px">캐릭터 설정과 분리된 페어 전용 기념일입니다.</div></div><div style="display:flex;gap:8px;align-items:center"><button class="btn primary" onclick="openPairDdayModal()">＋ 페어 D-DAY 추가</button></div></div>
+    <div id="pairDdayContainer"></div>
+  </div>
+
+  <div id="view-folder" class="page-view layout-main-only">
+    <div class="profile-banner-container">
+      <div class="profile-banner-image-bg" id="folderViewBannerBg" style="height:150px;"></div>
+      <div class="banner-height-control" id="folderBannerHeightControl" style="display:none; position:absolute; bottom:10px; right:10px; color:#fff; font-size:11px; gap:6px; align-items:center;">
+        <span>배너높이</span>
+        <input type="range" min="80" max="260" value="150" oninput="resizeFolderBannerCover(this.value)">
+        <label style="cursor:pointer; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:3px">📸 사진 등록
+          <input type="file" accept="image/*" style="display:none" onchange="uploadFolderBannerImage(event)">
+        </label>
+      </div>
+    </div>
+
+    <div class="main-title-area" style="margin-bottom:12px">
+      <div>
+        <h2 class="main-title" style="text-align:left; margin-bottom:4px" id="folderViewTitle">폴더</h2>
+        <p style="font-size:13px; color:var(--muted)">장르/세계관 설정 가이드 및 소속 인물 문서</p>
+      </div>
+      <div style="display:flex; gap:6px">
+         <button class="btn" id="folderEditTriggerModeBtn" onclick="toggleFolderSettingEditPanelUi()">설정/배너 편집</button>
+         <button class="btn primary" onclick="openCharacterAddModal()">＋ 캐릭터 추가</button>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:between; align-items:center; margin-bottom:8px">
+      <div style="font-size:12px; font-weight:bold; color:var(--accent); flex:1">📖 세계관 / 장르 설정 및 서사 명세</div>
+      <button class="btn" id="folderSettingPopupInlineBtn" style="display:none; font-size:11px; padding:3px 10px; border-color:var(--accent); color:var(--accent)" onclick="openFolderWorldSettingPopupModal()">✏️ 설정 편집 팝업</button>
+    </div>
+    <div class="prose" id="folderWorldSettingProseView" style="background:transparent; border:none; padding:4px 0; min-height:40px; margin-bottom:28px;">
+      설정이 비어있습니다.
+    </div>
+
+    <div class="sidebar-label" style="padding:0">👥 소속 캐릭터 문서 리스트</div>
+    <div id="characterViewContentWrapper"></div>
+  </div>
+
+  <div id="view-character" class="page-view">
+    <div class="layout-three-col">
+      
+      <aside class="sidebar-left">
+        <div class="sidebar-label">소속 폴더 캐릭터</div>
+        <div class="sidebar-section" id="sidebarCharList"></div>
+      </aside>
+      
+      <main class="main-content" style="padding-right:12px;">
+        <div class="cover" id="charDocumentCover">
+          <div class="banner-height-control" id="coverHeightControlPanel">
+            <span>배너높이</span>
+            <input type="range" min="80" max="300" value="140" oninput="resizeCharacterBannerCover(this.value)">
+            <label style="cursor:pointer; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:3px">📸 사진 등록
+              <input type="file" accept="image/*" style="display:none" onchange="uploadCharacterCoverImg(event)">
+            </label>
+          </div>
+        </div>
+        <div class="char-profile-header">
+          <div class="char-avatar-box" id="documentAvatar" onclick="handleHeaderIdentityClick()">👤</div>
+          <div>
+            <h1 class="main-title" style="text-align:left; margin:0;" id="docCharName" onclick="handleHeaderIdentityClick()">캐릭터</h1>
+          </div>
+        </div>
+
+        <div class="editor-toolbar" id="wikiEditorToolbar" onmousedown="handleToolbarMouseDown(event)">
+          <button style="font-weight:bold" onclick="document.execCommand('bold', false, null)">B</button>
+          <button style="font-style:italic" onclick="document.execCommand('italic', false, null)">I</button>
+          <button style="text-decoration:underline" onclick="document.execCommand('underline', false, null)">U</button>
+          
+          <select id="editorFontFamilySelector" onchange="changeGlobalFontLayoutEngine(this.value)">
+            <option value="canvas-font-notosans">Noto Sans</option>
+            <option value="canvas-font-gowun">고운 바탕</option>
+            <option value="canvas-font-nanum">나눔 고딕</option>
+          </select>
+
+          <div class="color-picker-wrapper">
+            <span>글자색</span>
+            <input type="color" class="color-input" id="toolbarColorPicker" oninput="document.getElementById('toolbarColorHex').value=this.value; applyFontColorToSelection(this.value)">
+            <input type="text" id="toolbarColorHex" placeholder="#000000" maxlength="7"
+              style="width:72px;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-size:12px;background:var(--white);color:var(--text)"
+              oninput="var v=this.value; if(/^#[0-9a-fA-F]{6}$/.test(v)){document.getElementById('toolbarColorPicker').value=v; applyFontColorToSelection(v);}">
+          </div>
+
+          <span style="color:var(--border2); margin:0 4px">|</span>
+          <button style="color:var(--teal); font-weight:bold" onclick="openInlineImageInsertModal()">📸 본문 사진</button>
+          <button style="color:#1a6fd8; font-weight:bold" onclick="insertLinkToEditor()">🔗 링크</button>
+          <button style="color:var(--accent); font-weight:bold" onclick="openCustomTableInsertPopupModal()">📊 자유 표 삽입</button>
+          <button style="color:var(--accent); font-weight:bold" onclick="executeWikiFootnoteSystemStamp()">📌 [내용 각주]</button>
+          <button style="color:#e066ff; font-weight:bold" onclick="openQuoteBlockInsertModal()">💬 명언 블록</button>
+          
+          <button style="color:#e066ff; font-weight:bold" onclick="insertSpoilerBlindTemplateToEditor()">👁️ 스포일러 가림막</button>
+          <button style="color:#1a8a72; font-weight:bold" id="radarToggleControlTriggerBtn" onclick="toggleRadarChartBuildVisiblity()">📊 스탯 차트 활성화</button>
+          
+          <div class="color-picker-wrapper" style="margin-left:0; padding-left:6px; border-left:1px solid var(--border)">
+            <span>크기</span>
+            <select id="toolbarFontSize" style="padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-size:12px;background:var(--white);color:var(--text)"
+              onchange="applyFontSizeToSelection(this.value)">
+              <option value="">선택</option>
+              <option value="11px">11</option>
+              <option value="12px">12</option>
+              <option value="13px">13</option>
+              <option value="14px">14</option>
+              <option value="16px">16</option>
+              <option value="18px">18</option>
+              <option value="20px">20</option>
+              <option value="24px">24</option>
+              <option value="28px">28</option>
+              <option value="32px">32</option>
+            </select>
+          </div>
+          <div class="color-picker-wrapper" style="margin-left:0; padding-left:6px; border-left:1px solid var(--border)">
+            <span>기본크기</span>
+            <select id="toolbarBaseFontSize" style="padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-size:12px;background:var(--white);color:var(--text)"
+              onchange="applyBaseBlockFontSize(this.value)">
+              <option value="">기본</option>
+              <option value="12px">12</option>
+              <option value="13px">13</option>
+              <option value="14px">14</option>
+              <option value="15px">15</option>
+              <option value="16px">16</option>
+              <option value="17px">17</option>
+              <option value="18px">18</option>
+            </select>
+          </div>
+          <button style="color:#dc2626" onclick="deleteCurrentCharacter()">❌ 제명</button>
+        </div>
+
+        <div id="characterRadarChartInteractiveCanvasBox" style="display:none;"></div>
+
+        <div id="dynamicSectionsContainer"></div>
+        
+        <div class="footnote-area-list" id="wikiAutoFootnoteRenderArea" style="display:none;"></div>
+
+        <div style="height:120px"></div>
+      </main>
+
+      <aside class="sidebar-right">
+        <div>
+          <div style="font-size:11px; font-weight:bold; color:var(--muted2); margin-bottom:12px; text-transform:uppercase">내비게이터 목차 맵</div>
+          <div class="toc-container" id="rightTocContainer"></div>
+        </div>
+        <button class="btn primary" id="tocAddBtn" style="font-size:11px; padding:6px; margin-top:10px; width:100%; display:none" onclick="openNewTocModalPopup()">＋ 목록 항목 추가</button>
+      </aside>
+    </div>
+  </div>
+
+</div>
+
+<!-- 핸드폰 모달 -->
+<div id="phoneOverlay" class="phone-overlay" style="display:none" onclick="if(event.target===this)closePhone()">
+  <div style="position:relative">
+    <button class="phone-close-btn" onclick="closePhone()">✕</button>
+    <div class="phone-frame" id="phoneFrame">
+      <div class="phone-screen" id="phoneScreen"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="globalModalOverlay">
+  <div class="modal-window" id="modalWindowContent"></div>
+</div>
+
+<script>
+let charaverseDatabase = {
+  "량량": {
+    bio: "동양 판타지와 캐릭터 아카이브",
+    avatar: "", banner: "",
+    folders: [
+      {
+        name: "우리 세계관",
+        desc: "동양풍 판타지 요괴 세계관 명세 모음집",
+        worldTitle: "우리 세계관",
+        worldSubtitle: "동양풍 판타지 요괴 세계관",
+        banner: "", bannerHeight: "150",
+        worldSetting: "본 세계관은 동양풍 판타지를 기반으로 구축되었으며 신수 및 도깨비들이 인간과 상생하는 규칙을 다룹니다.",
+        characters: [
+          { 
+            name: "늘해", avatar: "", isAvatarImg: false, coverImg: "", coverHeight: "140",
+            image: "", imageWidth: "300", imageHeight: "400", imageAlign: "center",
+            useRadar: true,
+            radarData: { "근력": 80, "민첩": 90, "마력": 75, "지력": 85, "생존력": 60, "잠재력": 95 },
+            relationships: {
+              nodes: [
+                { id: "n1", name: "늘해(본인)", x: 150, y: 160, img: "" },
+                { id: "n2", name: "파트너 요괴", x: 500, y: 160, img: "" }
+              ],
+              edges: [
+                { from: "n1", to: "n2", text: "계약 관계", color: "#1982fc" },
+                { from: "n2", to: "n1", text: "수호와 절대 신뢰", color: "#e066ff" }
+              ]
+            },
+            footnotes: [
+              { id: "fn-1", text: "특정 도깨비 가문에서 태어날 때 부여받는 고유의 절대 각인 표식." }
+            ],
+            sections: [
+              { id: "sec-0", title: "0. 전신 비주얼 스탠딩", type: "image" },
+              { id: "sec-1", title: "1. 기본 정보 명세", type: "table", data: [ {k:"종족", v:"도깨비"}, {k:"나이", v:"수백 년"} ] },
+              { id: "sec-2", title: "2. 외형 특징 명세", type: "text", data: "은백색 머리카락과 옅은 회청색 눈동자<a class='wiki-footnote-ref' data-num='1' data-tip='특정 도깨비 가문에서 태어날 때 부여받는 고유의 절대 각인 표식.' href='#fn-link-1' id='fn-ref-1'>[1]</a>를 지녔다." },
+              { id: "sec-3", title: "3. 숨겨진 내막 과거사", type: "text", data: `<div class="spoiler-container" contenteditable="false"><div class="spoiler-blind" onclick="unveilSpoilerContainerDirect(this)"><div class="spoiler-blind-title">⚠️ 잠겨진 스포일러 주의 구역</div><div class="spoiler-blind-desc">캐릭터의 진상 및 과거 반전 명세를 보려면 클릭하세요.</div></div><div class="spoiler-content" contenteditable="true">사실 늘해는 일반 도깨비 가문 출신이 아닌, 멸망한 신수 혈통의 유일한 생존자라는 사실이 후반부 서사에서 밝혀진다.</div></div>` }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+};
+
+let navigationHistory = [];
+let currentView = 'main';
+let currentCreator = '';
+let currentFolder = '';
+let currentCharacter = '';
+let isCharacterEditMode = false;
+let isFolderEditUiActive = false;
+let globalSelectedFontClass = 'canvas-font-notosans';
+let savedSelectionRange = null;
+
+// ── localStorage 전용 저장/로드 ──
+var _relDragging = false;
+
+// ── IndexedDB 저장 엔진 ──
+var _IDB_NAME = 'charaverseStandaloneDB_v2';
+var _IDB_STORE = 'data';
+var _IDB_KEY = 'charaverseStandaloneDatabase';
+var _idb = null;
+
+function _openIDB(callback) {
+  if (_idb) { callback(_idb); return; }
+  var req = indexedDB.open(_IDB_NAME, 1);
+  req.onupgradeneeded = function(e) {
+    e.target.result.createObjectStore(_IDB_STORE);
+  };
+  req.onsuccess = function(e) {
+    _idb = e.target.result;
+    callback(_idb);
+  };
+  req.onerror = function() { console.error('IndexedDB 열기 실패'); };
+}
+
+function _idbLoad(callback) {
+  _openIDB(function(db) {
+    var tx = db.transaction(_IDB_STORE, 'readonly');
+    var req = tx.objectStore(_IDB_STORE).get(_IDB_KEY);
+    req.onsuccess = function() { callback(req.result || null); };
+    req.onerror = function() { callback(null); };
+  });
+}
+
+function _lsSave() {
+  var saveIndicator = document.getElementById('saveStatusIndicator');
+  if (saveIndicator) { saveIndicator.textContent = '저장 중…'; saveIndicator.style.color = 'var(--muted)'; }
+  _openIDB(function(db) {
+    try {
+      var tx = db.transaction(_IDB_STORE, 'readwrite');
+      tx.objectStore(_IDB_STORE).put(JSON.parse(JSON.stringify(charaverseDatabase)), _IDB_KEY);
+      tx.oncomplete = function() {
+        if (saveIndicator) { saveIndicator.textContent = '✓ 저장됨'; saveIndicator.style.color = 'var(--teal)'; setTimeout(function(){ saveIndicator.textContent = ''; }, 2500); }
+      };
+      tx.onerror = function() {
+        if (saveIndicator) { saveIndicator.textContent = '⚠ 저장 실패'; saveIndicator.style.color = '#dc2626'; }
+      };
+    } catch(e) {
+      if (saveIndicator) { saveIndicator.textContent = '⚠ 저장 실패'; saveIndicator.style.color = '#dc2626'; }
+      console.error('IndexedDB 저장 실패:', e);
+    }
+  });
+}
+
+// 최초 로드: IndexedDB에서 불러오기
+_idbLoad(function(saved) {
+  if (saved) { charaverseDatabase = saved; }
+  var savedTheme='pastel-pink'; try{savedTheme=localStorage.getItem('charaverseTheme')||'pastel-pink'}catch(e){} document.documentElement.setAttribute('data-theme',savedTheme); var themeSel=document.getElementById('globalThemeSelector'); if(themeSel) themeSel.value=savedTheme;
+  renderCircleCreatorGrid();
+  updateNavbar();
+});
+
+window.saveToFirebase = function() { _lsSave(); };
+window.saveCreatorToFirebase = function(creatorName) { _lsSave(); };
+window.deleteCreator = function(name) {
+  if (!confirm("'" + name + "' 창작자를 삭제할까요?")) return;
+  delete charaverseDatabase[name];
+  _lsSave(); clearToMain();
+};
+window.deleteFolder = function(folderName) {
+  if (!confirm("'" + folderName + "' 세계관을 삭제할까요?")) return;
+  charaverseDatabase[currentCreator].folders = charaverseDatabase[currentCreator].folders.filter(function(f){ return f.name !== folderName; });
+  _lsSave(); navigate('creator', currentCreator);
+};
+window.deleteCharacterCard = function(charName) {
+  if (!confirm("'" + charName + "' 캐릭터를 삭제할까요?")) return;
+  var folder = charaverseDatabase[currentCreator].folders.find(function(f){ return f.name === currentFolder; });
+  folder.characters = folder.characters.filter(function(c){ return c.name !== charName; });
+  _lsSave(); renderFolderContentPage();
+};
+
+function changeGlobalTheme(val) { document.documentElement.setAttribute('data-theme', val); try{localStorage.setItem('charaverseTheme',val)}catch(e){} var sel=document.getElementById('globalThemeSelector'); if(sel) sel.value=val; }
+function changeGlobalFontLayoutEngine(fontClass) {
+  globalSelectedFontClass = fontClass;
+  // 재렌더 없이 현재 prose 블록에만 폰트 클래스 교체 (selection 유지)
+  const fontClasses = ['canvas-font-notosans','canvas-font-gowun','canvas-font-nanum','canvas-font-notoserif'];
+  document.querySelectorAll('.wiki-editable-block').forEach(function(b) {
+    fontClasses.forEach(function(c) { b.classList.remove(c); });
+    b.classList.add(fontClass);
+  });
+  // 폰트 셀렉터 값 동기화
+  var sel = document.getElementById('editorFontFamilySelector');
+  if(sel && sel.value !== fontClass) sel.value = fontClass;
+  // char 데이터에도 폰트 저장 (새로고침 후에도 유지)
+  if(currentCreator && currentFolder && currentCharacter) {
+    var char = charaverseDatabase[currentCreator].folders.find(function(f){return f.name===currentFolder;}).characters.find(function(c){return c.name===currentCharacter;});
+    if(char) char.fontClass = fontClass;
+    saveCreatorToFirebase(currentCreator);
+  }
+}
+
+function applyFontSizeToSelection(size) {
+  if(!size) return;
+  // savedSelectionRange 복원 후 span으로 감싸기
+  var sel = window.getSelection();
+  if(savedSelectionRange) { try { sel.removeAllRanges(); sel.addRange(savedSelectionRange); } catch(e){} }
+  if(!sel.rangeCount || sel.isCollapsed) return;
+  var range = sel.getRangeAt(0);
+  var span = document.createElement('span');
+  span.style.fontSize = size;
+  try { range.surroundContents(span); } catch(e) {
+    // surroundContents 실패 시 (부분 선택 등) extractContents 방식
+    var frag = range.extractContents();
+    span.appendChild(frag); range.insertNode(span);
+  }
+  sel.removeAllRanges();
+  // 크기 선택 리셋
+  setTimeout(function(){ var s = document.getElementById('toolbarFontSize'); if(s) s.value=''; }, 50);
+}
+
+function applyBaseBlockFontSize(size) {
+  if(!currentCreator || !currentFolder || !currentCharacter) return;
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  char.baseFontSize = size || '';
+  // 현재 열려 있는 모든 prose 블록에 즉시 적용
+  document.querySelectorAll('.wiki-editable-block').forEach(function(b){
+    b.style.fontSize = size || '';
+  });
+  // 셀렉터 값 동기화
+  var sel = document.getElementById('toolbarBaseFontSize');
+  if(sel) sel.value = size || '';
+  saveCreatorToFirebase(currentCreator);
+}
+
+function applyFontColorToSelection(color) {
+  if(!color) return;
+  var sel = window.getSelection();
+  if(savedSelectionRange) { try { sel.removeAllRanges(); sel.addRange(savedSelectionRange); } catch(e){} }
+  if(!sel || !sel.rangeCount || sel.isCollapsed) {
+    // 선택 없으면 execCommand fallback
+    document.execCommand('foreColor', false, color);
+    return;
+  }
+  var range = sel.getRangeAt(0);
+  var span = document.createElement('span');
+  span.style.color = color;
+  try { range.surroundContents(span); } catch(e) {
+    var frag = range.extractContents();
+    span.appendChild(frag); range.insertNode(span);
+  }
+  sel.removeAllRanges();
+}
+
+function updateNavbar() {
+  document.getElementById('globalBackBtn').style.visibility = (navigationHistory.length > 0) ? 'visible' : 'hidden';
+}
+
+function navigate(view, creator = '', folder = '', character = '', isBackAction = false) {
+  if (!isBackAction && view !== currentView) {
+    navigationHistory.push({ view: currentView, creator: currentCreator, folder: currentFolder, character: currentCharacter });
+  }
+  
+  currentView = view; currentCreator = creator; currentFolder = folder; currentCharacter = character;
+  isCharacterEditMode = false; isFolderEditUiActive = false;
+  updateNavbar();
+
+  document.getElementById('globalCharacterEditBtn').textContent = '편집 하기';
+  document.getElementById('globalCharacterEditBtn').style.background = '';
+  document.getElementById('wikiEditorToolbar').style.display = 'none';
+  document.getElementById('tocAddBtn').style.display = 'none';
+  document.getElementById('coverHeightControlPanel').style.display = 'none';
+  document.getElementById('folderBannerHeightControl').style.display = 'none';
+  document.getElementById('folderSettingPopupInlineBtn').style.display = 'none';
+  document.getElementById('folderEditTriggerModeBtn').textContent = "설정/배너 편집";
+
+  document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active'));
+  document.getElementById('globalCharacterEditBtn').style.display = (view === 'character') ? 'block' : 'none';
+  document.getElementById('globalPhoneBtn').style.display = (view === 'character') ? 'flex' : 'none';
+
+  const bc = document.getElementById('breadcrumbContainer');
+  let html = `<span class="link" onclick="clearToMain()">C-Log</span>`;
+  if (creator) html += ` <span class="sep">›</span> <span class="link" onclick="navigate('creator','${creator}')">${creator}</span>`;
+  if (folder) html += ` <span class="sep">›</span> <span class="link" onclick="navigate('folder','${creator}','${folder}')">${folder}</span>`;
+  if (character) html += ` <span class="sep">›</span> <span class="sep" style="color:var(--text); font-weight:700">${character}</span>`;
+  bc.innerHTML = html;
+
+  if (view === 'main') { renderCircleCreatorGrid(); document.getElementById('view-main').classList.add('active'); }
+  else if (view === 'creator') { renderCreatorProfilePage(); document.getElementById('view-creator').classList.add('active'); }
+  else if (view === 'folder') { renderFolderContentPage(); document.getElementById('view-folder').classList.add('active'); }
+  else if (view === 'character') { renderCharacterDocument(); document.getElementById('view-character').classList.add('active'); }
+}
+
+window.addEventListener('popstate', function(){ handleBack(); });
+function handleBack() {
+  if (navigationHistory.length > 0) {
+    const prev = navigationHistory.pop();
+    navigate(prev.view, prev.creator, prev.folder, prev.character, true);
+  }
+}
+function clearToMain() { navigationHistory = []; navigate('main'); }
+
+function renderCircleCreatorGrid() {
+  let gridHtml = '';
+  Object.keys(charaverseDatabase).forEach(name => {
+    const current = charaverseDatabase[name];
+    let avatarHtml = current.avatar ? `<img src="${current.avatar}" style="width:100%; height:100%; object-fit:cover;">` : `<div class="circle-avatar-placeholder">${name[0]}</div>`;
+    gridHtml += `<div class="circle-creator-node" style="position:relative;">
+      <div onclick="navigate('creator','${name}')">
+        <div class="circle-avatar-wrapper">${avatarHtml}</div>
+        <div class="circle-creator-name">${name}</div>
+      </div>
+      <div style="position:absolute;top:0;right:-8px;">
+        <div onclick="event.stopPropagation();this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="width:22px;height:22px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;">⋮</div>
+        <div style="display:none;position:absolute;right:0;top:26px;background:var(--white);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);z-index:200;min-width:90px;overflow:hidden;">
+          <div onclick="deleteCreator('${name}')" style="padding:9px 14px;font-size:13px;color:#ef4444;cursor:pointer;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background=''">🗑️ 삭제</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('mainCircleCreatorGrid').innerHTML = gridHtml || '<div class="empty-placeholder-box">등록된 창작 멤버가 없습니다.</div>';
+}
+
+function openNewCreatorFormPopup() {
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">신규 창작자 그룹 추가</div>
+    <div class="modal-body-form">
+      <div class="form-group"><label class="form-label">창작자 그룹 명칭</label><input type="text" id="addCrName" class="form-input" placeholder="예: 팀 아카이브"></div>
+      <div class="form-group"><label class="form-label">한 줄 프로필 소개글</label><input type="text" id="addCrBio" class="form-input" placeholder="소개 설명을 적어주세요."></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="submitNewCreator()">등록 하기</button></div>`;
+  document.getElementById('globalModalOverlay').style.display = "flex";
+}
+function submitNewCreator() {
+  const name = document.getElementById('addCrName').value.trim(); if(!name) return alert('명칭을 기입해주세요.');
+  charaverseDatabase[name] = { bio: document.getElementById('addCrBio').value.trim() || "C-Log 창작 멤버", avatar: "", banner: "", folders: [] };
+  closeGlobalModal(); saveToFirebase(); navigate('creator', name);
+}
+
+function getPairDdayData(){var c=charaverseDatabase[currentCreator];if(!c)return[];if(!Array.isArray(c.pairDdays))c.pairDdays=[];return c.pairDdays}
+function getAllCharacterCandidates(){var c=charaverseDatabase[currentCreator],a=[];(c&&c.folders||[]).forEach(function(f){(f.characters||[]).forEach(function(x){a.push({folder:f.name,name:x.name,key:f.name+'///'+x.name})})});return a}
+function pairEsc(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function calcDday(d){var t=new Date(d+'T00:00:00'),n=new Date();n.setHours(0,0,0,0);var x=Math.round((t-n)/86400000);return x>0?'D-'+x:x<0?'D+'+Math.abs(x):'D-DAY'}
+function openPairDdayModal(i){var a=getAllCharacterCandidates(),arr=getPairDdayData(),x=typeof i==='number'?arr[i]||{}:{};if(a.length<2){alert('캐릭터가 2명 이상 필요합니다.');return}var opts=a.map(function(c,j){return'<option value="'+j+'">'+pairEsc(c.folder+' / '+c.name)+'</option>'}).join(''),ai=Math.max(0,a.findIndex(function(c){return c.key===x.aKey})),bi=a.findIndex(function(c){return c.key===x.bKey});if(bi<0||bi===ai)bi=(ai+1)%a.length;document.getElementById('modalWindowContent').innerHTML='<div class="modal-title">💙 페어 D-DAY '+(typeof i==='number'?'수정':'추가')+'</div><div class="modal-body-form"><input id="pairTitle" class="form-input" placeholder="페어 이름" value="'+pairEsc(x.title||'새로운 페어')+'"><select id="pairA" class="form-select">'+opts+'</select><select id="pairB" class="form-select">'+opts+'</select><input id="pairDate" type="date" class="form-input" value="'+(x.date||'')+'"><label class="form-label">D-DAY 사진 <input id="pairPhoto" type="file" accept="image/*" style="width:100%;margin-top:6px"></label><div id="pairPhotoPreview" style="display:flex;align-items:center;gap:8px;margin:4px 0">'+(x.photo?'<img src="'+x.photo+'" style="width:76px;height:76px;object-fit:cover;border-radius:12px"><button type="button" class="btn" onclick="window._pairPhotoRemove=true;this.parentElement.innerHTML=\'사진 제거됨\'">제거</button>':'')+'</div><textarea id="pairMemo" class="form-input" rows="2" placeholder="메모 (선택)">'+pairEsc(x.memo||'')+'</textarea></div><div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="savePairDday('+(typeof i==='number'?i:'null')+')">저장</button></div>';document.getElementById('globalModalOverlay').style.display='flex';pairA.value=ai;pairB.value=bi}
+function savePairDday(i){var a=getAllCharacterCandidates(),ai=+pairA.value,bi=+pairB.value,d=pairDate.value;if(ai===bi||!d){alert(ai===bi?'서로 다른 캐릭터를 선택해주세요.':'기준 날짜를 선택해주세요.');return}var arr=getPairDdayData(),old=i!==null?arr[i]:null;var file=document.getElementById('pairPhoto').files[0];function finish(photo){var x={id:old&&old.id||'pair-'+Date.now(),title:pairTitle.value.trim()||'새로운 페어',aKey:a[ai].key,bKey:a[bi].key,aName:a[ai].name,bName:a[bi].name,date:d,memo:pairMemo.value.trim(),photo:photo||((window._pairPhotoRemove)?'':(old&&old.photo||''))};if(i===null)arr.push(x);else arr[i]=x;window._pairPhotoRemove=false;closeGlobalModal();saveToFirebase();renderPairDdays();renderCharacterDocument()}if(file)readImageOriginal(file,finish);else finish('')}
+function deletePairDday(i){var a = getPairDdayData();if(!confirm('이 페어 D-DAY를 삭제할까요?')) return;a.splice(i, 1);saveToFirebase();renderPairDdays();renderCharacterDocument();}
+function togglePairDdays(){window._pairDdaysCollapsed=!window._pairDdaysCollapsed;renderPairDdays();}
+function renderPairDdays(){var b=document.getElementById('pairDdayContainer');if(!b)return;var a=getPairDdayData(),collapsed=!!window._pairDdaysCollapsed;var btn=document.getElementById('pairDdayToggleBtn'),icon=document.getElementById('pairDdayToggleIcon');if(btn){btn.setAttribute('aria-expanded',String(!collapsed));btn.setAttribute('title',collapsed?'페어 D-DAY 목록 펼치기':'페어 D-DAY 목록 접기');btn.setAttribute('aria-label',collapsed?'페어 D-DAY 목록 펼치기':'페어 D-DAY 목록 접기')}if(btn)btn.classList.toggle('is-collapsed',collapsed);if(icon)icon.textContent='';b.style.display=collapsed?'none':'';if(collapsed)return;b.innerHTML=a.length?a.map(function(x,i){return'<div style="display:flex;align-items:center;gap:10px;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;min-height:174px">'+(x.photo?'<img src="'+x.photo+'" style="width:160px;height:160px;object-fit:contain;object-position:center;border-radius:14px;flex:none;image-rendering:auto;background:#f7f7f7">':'')+'<div style="flex:1;min-width:0"><div style="font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">💙 '+pairEsc(x.aName)+' × '+pairEsc(x.bName)+'</div><b style="font-size:12px">'+pairEsc(x.title)+'</b></div><div style="font-size:19px;color:var(--accent);font-weight:800;white-space:nowrap">'+calcDday(x.date)+'</div><button class="btn" style="padding:4px 6px;font-size:10px" onclick="openPairDdayModal('+i+')">✏️</button><button class="btn" style="padding:4px 6px;font-size:10px;color:#dc2626" onclick="deletePairDday('+i+')">×</button></div>'}).join(''):'<div class="empty-placeholder-box" style="padding:18px">등록된 페어 D-DAY가 없습니다.</div>'} 
+
+function renderCreatorProfilePage() {
+  const target = charaverseDatabase[currentCreator];
+  if (!target) return;
+  if (!target.folders) target.folders = [];
+  document.getElementById('creatorViewName').textContent = currentCreator;
+  const bioEl = document.getElementById('creatorViewBio');
+  bioEl.innerHTML = (target.bio || "설정된 소개글이 없습니다.").replace(/\n/g, '<br>');
+  bioEl.style.whiteSpace = 'pre-wrap';
+  document.getElementById('creatorViewAvatarBox').innerHTML = target.avatar ? `<img src="${target.avatar}" style="width:100%; height:100%; object-fit:cover;">` : `<div style="width:100%; height:100%; background:var(--accent-bg); color:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:24px">${currentCreator[0]}</div>`;
+  document.getElementById('creatorViewBannerBg').style.backgroundImage = target.banner ? `url('${target.banner}')` : '';
+
+  let fHtml = '';
+  target.folders.forEach((f, idx) => {
+    fHtml += `<div class="folder-card" style="position:relative;">
+      <div onclick="navigate('folder','${currentCreator}','${f.name}')">
+        <div class="folder-card-title">📁 ${f.name}</div><div class="folder-card-desc">${f.desc}</div>
+      </div>
+      <div style="position:absolute;top:10px;right:10px;">
+        <div onclick="event.stopPropagation();this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="width:26px;height:26px;border-radius:6px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;">⋮</div>
+        <div style="display:none;position:absolute;right:0;top:30px;background:var(--white);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);z-index:200;min-width:100px;overflow:hidden;">
+          <div onclick="openFolderRenameModal('${f.name}')" style="padding:9px 14px;font-size:13px;color:var(--text);cursor:pointer;" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''">✏️ 수정</div>
+          <div onclick="deleteFolder('${f.name}')" style="padding:9px 14px;font-size:13px;color:#ef4444;cursor:pointer;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background=''">🗑️ 삭제</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('folderGridContainer').innerHTML = fHtml || '<div class="empty-placeholder-box">생성된 폴더 카테고리가 없습니다.</div>';
+  renderPairDdays();
+}
+
+function openFolderRenameModal(folderName) {
+  const f = charaverseDatabase[currentCreator].folders.find(f => f.name === folderName);
+  if (!f) return;
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">✏️ 세계관 정보 수정</div>
+    <div class="modal-body-form">
+      <div class="form-group"><label class="form-label">세계관 이름</label><input type="text" id="renameFolderName" class="form-input" value="${f.name}"></div>
+      <div class="form-group"><label class="form-label">짧은 부가 설명</label><input type="text" id="renameFolderDesc" class="form-input" value="${f.desc || ''}"></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="submitFolderRename('${folderName}')">저장</button></div>`;
+  document.getElementById('globalModalOverlay').style.display = "flex";
+}
+function submitFolderRename(oldName) {
+  const newName = document.getElementById('renameFolderName').value.trim();
+  const newDesc = document.getElementById('renameFolderDesc').value.trim();
+  if (!newName) return;
+  const f = charaverseDatabase[currentCreator].folders.find(f => f.name === oldName);
+  if (!f) return;
+  f.name = newName;
+  f.desc = newDesc;
+  f.worldTitle = newName;
+  f.worldSubtitle = newDesc;
+  closeGlobalModal(); saveToFirebase(); renderCreatorProfilePage();
+}
+
+function openCreatorEditModal() {
+  const target = charaverseDatabase[currentCreator];
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">창작자 정보 및 비주얼 설정</div>
+    <div class="modal-body-form">
+      <div class="form-group"><label class="form-label">창작자 이름</label><input type="text" id="editCrName" class="form-input" value="${currentCreator}"></div>
+      <div class="form-group"><label class="form-label">한 줄 프로필 요약 (엔터로 줄바꿈 가능)</label><textarea id="editCrBio" class="form-input" style="height:80px; resize:vertical;">${target.bio || ''}</textarea></div>
+      <div class="form-group"><label class="form-label">프로필 사진</label><input type="file" accept="image/*" class="form-input" onchange="processModalImageFile(this, 'avatar')"></div>
+      <div class="form-group"><label class="form-label">배경 배너 사진</label><input type="file" accept="image/*" class="form-input" onchange="processModalImageFile(this, 'banner')"></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="submitCreatorEditForm()">설정 저장</button></div>`;
+  window.tempAvatarData = target.avatar; window.tempBannerData = target.banner;
+  document.getElementById('globalModalOverlay').style.display = "flex";
+}
+function processModalImageFile(input, mode) {
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    if(mode === 'avatar') window.tempAvatarData = e.target.result;
+    if(mode === 'banner') window.tempBannerData = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function submitCreatorEditForm() {
+  const nextName = document.getElementById('editCrName').value.trim(); if(!nextName) return;
+  if(nextName !== currentCreator) { charaverseDatabase[nextName] = charaverseDatabase[currentCreator]; delete charaverseDatabase[currentCreator]; currentCreator = nextName; }
+  charaverseDatabase[currentCreator].bio = document.getElementById('editCrBio').value.trim();
+  charaverseDatabase[currentCreator].avatar = window.tempAvatarData || "";
+  charaverseDatabase[currentCreator].banner = window.tempBannerData || "";
+  closeGlobalModal(); renderCreatorProfilePage(); saveToFirebase();
+}
+
+function openFolderAddModal() {
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">새로운 세계관 / 장르 폴더 생성</div>
+    <div class="modal-body-form">
+      <div class="form-group"><label class="form-label">폴더 카테고리 이름</label><input type="text" id="newFolderName" class="form-input"></div>
+      <div class="form-group"><label class="form-label">폴더 요약 설명</label><input type="text" id="newFolderDesc" class="form-input"></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="submitAddNewFolder()">폴더 추가 완료</button></div>`;
+  document.getElementById('globalModalOverlay').style.display = "flex";
+}
+function submitAddNewFolder() {
+  const name = document.getElementById('newFolderName').value.trim(); if(!name) return;
+  charaverseDatabase[currentCreator].folders.push({ 
+    name: name, desc: document.getElementById('newFolderDesc').value.trim(), banner: "", bannerHeight: "150",
+    worldTitle: name, worldSubtitle: document.getElementById('newFolderDesc').value.trim(),
+    worldSetting: "해당 장르 및 세계관의 핵심 설정 규칙이나 스토리를 기입해 보세요.", characters: [] 
+  });
+  closeGlobalModal(); saveToFirebase(); navigate('folder', currentCreator, name);
+}
+
+function renderFolderContentPage() {
+  const cr = charaverseDatabase[currentCreator];
+  if (!cr || !cr.folders) return;
+  const fData = cr.folders.find(f => f.name === currentFolder);
+  if (!fData) return;
+  if (!fData.characters) fData.characters = [];
+  document.getElementById('folderViewTitle').textContent = `📁 ${fData.name}`;
+  const bBg = document.getElementById('folderViewBannerBg');
+  bBg.style.height = (fData.bannerHeight || 150) + "px";
+  bBg.style.backgroundImage = fData.banner ? `url('${fData.banner}')` : '';
+  document.getElementById('folderWorldSettingProseView').innerHTML = fData.worldSetting || "설정된 세계관 가이드가 비어있습니다.";
+
+  const container = document.getElementById('characterViewContentWrapper');
+  if(!fData.characters || fData.characters.length === 0) {
+    container.innerHTML = `<div class="empty-placeholder-box" style="margin-top:14px;">이 세계관에 등록 설정된 소속 캐릭터 프로필 카드가 비어있습니다.</div>`;
+    return;
+  }
+  let cHtml = '<div class="char-card-grid">';
+  fData.characters.forEach(c => {
+    let symHtml = c.isAvatarImg && c.avatar ? `<img src="${c.avatar}" style="width:100%; height:100%; object-fit:cover;">` : `<span class="char-card-symbol-txt">${c.avatar || '👤'}</span>`;
+    cHtml += `<div class="char-card" style="position:relative;">
+      <div onclick="navigate('character','${currentCreator}','${currentFolder}','${c.name}')">
+        <div class="char-card-thumb">${symHtml}</div><div class="char-card-body"><div class="char-card-name">${c.name}</div></div>
+      </div>
+      <div style="position:absolute;top:8px;right:8px;">
+        <div onclick="event.stopPropagation();this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,0.9);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;">⋮</div>
+        <div style="display:none;position:absolute;right:0;top:28px;background:var(--white);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);z-index:200;min-width:90px;overflow:hidden;">
+          <div onclick="deleteCharacterCard('${c.name}')" style="padding:9px 14px;font-size:13px;color:#ef4444;cursor:pointer;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background=''">🗑️ 삭제</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  container.innerHTML = cHtml + '</div>';
+}
+
+function toggleFolderSettingEditPanelUi() {
+  isFolderEditUiActive = !isFolderEditUiActive;
+  const ctrlPanel = document.getElementById('folderBannerHeightControl');
+  const popupBtn = document.getElementById('folderSettingPopupInlineBtn');
+  const triggerBtn = document.getElementById('folderEditTriggerModeBtn');
+  if(isFolderEditUiActive) {
+    ctrlPanel.style.display = "flex"; popupBtn.style.display = "block"; triggerBtn.textContent = "편집 완료 및 저장";
+  } else {
+    ctrlPanel.style.display = "none"; popupBtn.style.display = "none"; triggerBtn.textContent = "설정/배너 편집";
+  }
+}
+
+function openFolderWorldSettingPopupModal() {
+  const fData = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder);
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">📖 세계관 설정 집필 팝업</div>
+    <div class="modal-body-form">
+      <div class="form-group"><label class="form-label">세계관 상세 설정 서술</label><textarea id="modalWorldSettingTextarea" class="form-input" style="height:260px; resize:vertical;">${fData.worldSetting || ''}</textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="submitFolderWorldSettingTextPopup()">설정 저장</button></div>`;
+  document.getElementById('globalModalOverlay').style.display = "flex";
+}
+function submitFolderWorldSettingTextPopup() {
+  const fData = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder);
+  fData.worldSetting = document.getElementById('modalWorldSettingTextarea').value;
+  closeGlobalModal(); saveToFirebase(); renderFolderContentPage();
+}
+function resizeFolderBannerCover(val) {
+  charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).bannerHeight = val;
+  document.getElementById('folderViewBannerBg').style.height = val + "px";
+}
+function uploadFolderBannerImage(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader(); reader.onload = function(evt) {
+    charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).banner = evt.target.result;
+    document.getElementById('folderViewBannerBg').style.backgroundImage = `url('${evt.target.result}')`;
+  }; reader.readAsDataURL(file);
+}
+
+function openCharacterAddModal() {
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">새로운 캐릭터 프로필 추가</div>
+    <div class="modal-body-form">
+      <div class="form-group"><label class="form-label">캐릭터 이름</label><input type="text" id="newCharName" class="form-input"></div>
+      <div class="form-group"><label class="form-label">식별 대표 심볼 기호</label><input type="text" id="newCharAvatar" class="form-input" value="👤"></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="submitAddNewCharacter()">캐릭터 추가 완료</button></div>`;
+  document.getElementById('globalModalOverlay').style.display = "flex";
+}
+function submitAddNewCharacter() {
+  const name = document.getElementById('newCharName').value.trim(); if(!name) return alert("이름을 입력하세요.");
+  const _fld = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder);
+  if (!_fld.characters) _fld.characters = [];
+  _fld.characters.push({
+    name: name, avatar: document.getElementById('newCharAvatar').value.trim() || "👤", isAvatarImg: false, coverImg: "", coverHeight: "140",
+    image: "", imageWidth: "300", imageHeight: "400", imageAlign: "center", useRadar: false,
+    radarData: { "근력": 50, "민첩": 50, "마력": 50, "지력": 50, "생존력": 50, "잠재력": 50 },
+    relationships: { nodes: [], edges: [] }, footnotes: [],
+    sections: [
+      { id: "sec-0", title: "0. 전신 비주얼 스탠딩", type: "image" },
+      { id: "sec-1", title: "1. 기본 정보 명세", type: "table", data: [ {k:"종족", v:"인간"}, {k:"나이", v:"미정"} ] },
+      { id: "sec-2", title: "2. 상세 특징 서술", type: "text", data: "이곳에 특징 요약을 집필해 보세요." }
+    ]
+  });
+  closeGlobalModal(); saveToFirebase(); renderFolderContentPage();
+}
+
+/* ==================== 🛠️ 나무위키 실시간 주석 엔진 완전 수리 파트 ==================== */
+function saveSelectionCacheRange() {
+  const sel = window.getSelection();
+  if (sel.rangeCount > 0) { savedSelectionRange = sel.getRangeAt(0).cloneRange(); }
+}
+
+// 툴바 클릭 시 contenteditable 포커스/selection이 날아가지 않도록 mousedown에서 방지
+function handleToolbarMouseDown(e) {
+  // INPUT(color, text 등)은 그냥 통과
+  if (e.target.tagName === 'INPUT') return;
+  // SELECT는 mousedown에서 selection만 미리 저장하고 preventDefault는 하지 않음 (드롭다운 오픈 보장)
+  if (e.target.tagName === 'SELECT') {
+    saveSelectionCacheRange();
+    return;
+  }
+  e.preventDefault(); // 포커스 이탈 방지
+  saveSelectionCacheRange(); // 이 시점의 selection 저장
+}
+
+function executeWikiFootnoteSystemStamp() {
+  // selection은 mousedown에서 이미 저장됨 (툴바 버튼 mousedown 핸들러)
+  saveSelectionCacheRange(); // 혹시 누락된 경우를 대비해 한 번 더 저장
+  // 현재 포커스된 편집 블록 ID를 별도로 기억 (모달 열리면 blur되므로)
+  const activeBlock = document.querySelector('.wiki-editable-block.edit-active');
+  window._savedActiveBlockId = activeBlock ? activeBlock.id : null;
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">📌 각주 내용 입력</div>
+    <div class="modal-body-form">
+      <div class="form-group"><label class="form-label">각주 상세 내용 (나무위키 스타일)</label><input type="text" id="modalFootnoteInputText" class="form-input" placeholder="상세 설명을 적어주세요." autofocus></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="submitWikiFootnoteInsertStamp()">각주 삽입</button></div>`;
+  document.getElementById('globalModalOverlay').style.display = "flex";
+  setTimeout(() => { const el = document.getElementById('modalFootnoteInputText'); if(el) el.focus(); }, 50);
+}
+
+function submitWikiFootnoteInsertStamp() {
+  const txt = document.getElementById('modalFootnoteInputText').value.trim(); if(!txt) return;
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  
+  if(!char.footnotes) char.footnotes = [];
+  const nextNum = char.footnotes.length + 1;
+  char.footnotes.push({ id: `fn-${nextNum}`, text: txt });
+
+  closeGlobalModal();
+
+  const node = document.createElement('a');
+  node.className = "wiki-footnote-ref";
+  node.id = `fn-ref-${nextNum}`;
+  node.setAttribute('href', `#fn-link-${nextNum}`);
+  node.setAttribute('data-num', nextNum);
+  node.setAttribute('data-tip', txt);
+  node.textContent = `[${nextNum}]`;
+
+  let inserted = false;
+  if (savedSelectionRange) {
+    try {
+      const container = savedSelectionRange.startContainer;
+      if (container && document.contains(container)) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(savedSelectionRange);
+        savedSelectionRange.insertNode(node);
+        savedSelectionRange.collapse(false);
+        inserted = true;
+      }
+    } catch(e) { inserted = false; }
+  }
+  if (!inserted) {
+    const fallback = (window._savedActiveBlockId && document.getElementById(window._savedActiveBlockId))
+      || document.querySelector('.wiki-editable-block.edit-active')
+      || document.querySelector('.edit-active');
+    if(fallback) { fallback.focus(); fallback.appendChild(node); inserted = true; }
+  }
+  
+  saveToFirebase();
+  renderAutoFootnoteListViewArea();
+}
+
+function renderAutoFootnoteListViewArea() {
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  const area = document.getElementById('wikiAutoFootnoteRenderArea');
+  if(!char.footnotes || char.footnotes.length === 0) { area.style.display = "none"; return; }
+  area.style.display = "block";
+  let html = `<div style="font-weight:bold; font-size:12px; margin-bottom:8px; color:var(--text)">[각주 주석 명세 리스트]</div>`;
+  char.footnotes.forEach((f, fIdx) => {
+    const num = f.id.replace('fn-', '');
+    const delBtn = isCharacterEditMode ? `<span onclick="deleteFootnoteEntry(${fIdx})" style="color:#dc2626;cursor:pointer;font-size:11px;flex-shrink:0;padding:1px 4px;border-radius:4px;border:1px solid #fca5a5;" title="각주 삭제">✕</span>` : '';
+    html += `<div class="footnote-item" id="fn-link-${num}" style="display:flex;align-items:flex-start;gap:6px;">
+      <a class="footnote-num" onclick="document.getElementById('fn-ref-${num}') && document.getElementById('fn-ref-${num}').scrollIntoView({behavior:'smooth'})">[${num}]</a>
+      <span class="footnote-text" style="flex:1">${f.text}</span>
+      ${delBtn}
+    </div>`;
+  });
+  area.innerHTML = html;
+}
+
+function deleteFootnoteEntry(fIdx) {
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  if(!char.footnotes || fIdx < 0 || fIdx >= char.footnotes.length) return;
+  const removedId = char.footnotes[fIdx].id;
+  const num = removedId.replace('fn-', '');
+  // DOM에서 해당 각주 참조 태그도 제거
+  const refEl = document.getElementById('fn-ref-' + num);
+  if(refEl) refEl.remove();
+  char.footnotes.splice(fIdx, 1);
+  saveToFirebase();
+  renderAutoFootnoteListViewArea();
+}
+
+/* ==================== 🛠️ 커스텀 에디터 내 즉각 표(Table) 주입 완전 수리 파트 ==================== */
+function openCustomTableInsertPopupModal() {
+  saveSelectionCacheRange();
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">📊 자유 커스텀 표 삽입 및 테두리/색상 세팅</div>
+    <div class="modal-body-form">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+        <div class="form-group"><label class="form-label">행 개수</label><input type="number" id="tblRows" class="form-input" value="2" min="1"></div>
+        <div class="form-group"><label class="form-label">열 개수</label><input type="number" id="tblCols" class="form-input" value="2" min="1"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">테두리 종류 모양</label>
+        <select id="tblBorderStyle" class="form-select">
+          <option value="solid">━━━━ 실선 (Solid)</option>
+          <option value="dashed">----------- 점선 (Dashed)</option>
+          <option value="double">════ 이중선 (Double)</option>
+        </select>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+        <div class="form-group"><label class="form-label">칸 내부 색칠 배경색</label><input type="color" id="tblCellBgColor" class="form-input" value="#ffffff" style="height:42px; padding:2px"></div>
+        <div class="form-group"><label class="form-label">테두리 선 컬러</label><input type="color" id="tblBorderColor" class="form-input" value="var(--border2)" style="height:42px; padding:2px"></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="submitEmbedCustomTableToProseContent()">표 생성 즉시 주입</button></div>`;
+  document.getElementById('globalModalOverlay').style.display = "flex";
+}
+
+function submitEmbedCustomTableToProseContent() {
+  const r = parseInt(document.getElementById('tblRows').value) || 2;
+  const c = parseInt(document.getElementById('tblCols').value) || 2;
+  const bStyle = document.getElementById('tblBorderStyle').value;
+  const bg = document.getElementById('tblCellBgColor').value;
+  const bColor = document.getElementById('tblBorderColor').value;
+  closeGlobalModal();
+
+  let div = document.createElement('div');
+  div.style.margin = "12px 0";
+  let tHtml = `<table style="width:100%; border-collapse:collapse; border:2px ${bStyle} ${bColor};">`;
+  for(let i=0; i<r; i++) {
+    tHtml += `<tr>`;
+    for(let j=0; j<c; j++) {
+      tHtml += `<td contenteditable="true" style="padding:10px; border:1px ${bStyle} ${bColor}; background-color:${bg}; min-width:60px">내용</td>`;
+    }
+    tHtml += `</tr>`;
+  }
+  tHtml += `</table><p><br></p>`;
+  div.innerHTML = tHtml;
+
+  const sel = window.getSelection();
+  if(savedSelectionRange) {
+    sel.removeAllRanges();
+    sel.addRange(savedSelectionRange);
+    savedSelectionRange.insertNode(div);
+    savedSelectionRange.collapse(false);
+  } else {
+    const fallback = document.querySelector('.edit-active');
+    if(fallback) fallback.appendChild(div);
+  }
+}
+
+/* ==================== 👁️ 과거사 분리 및 스포일러 가림막 컴포넌트 엔진 ==================== */
+function insertSpoilerBlindTemplateToEditor() {
+  saveSelectionCacheRange();
+  const html = `
+    <div class="spoiler-container" contenteditable="false" style="border: 1px dashed #c24070; background: #fff5f8; padding:14px; position:relative; border-radius:8px; margin:10px 0;">
+      <div class="spoiler-ctrl-bar" style="display:none;">
+        <button class="spoiler-ctrl-btn" onclick="reveilSpoilerContainer(this)">🙈 다시 가리기</button>
+        <button class="spoiler-ctrl-btn del spoiler-del-btn" onclick="deleteSpoilerContainer(this)" style="display:none">🗑 블록 삭제</button>
+      </div>
+      <div class="spoiler-blind" onclick="unveilSpoilerContainerDirect(this)" style="position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg, #2d2327, #4a353d); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; border-radius:6px; z-index:20;">
+        <span style="font-weight:bold; font-size:13px; color:#ffb3cb;">⚠️ 잠겨진 스포일러 반전 가림막 구역</span>
+        <span style="font-size:11px; opacity:0.8;">클릭 시 가림막이 해제되며 숨겨진 과거사 및 반전 내막이 표출됩니다.</span>
+      </div>
+      <div class="spoiler-content" contenteditable="true" style="opacity:0.2; pointer-events:none;">이곳에 비밀 가림막으로 숨겨둘 과거사/흑막 명세를 집필하세요.</div>
+    </div><p><br></p>`;
+  
+  const div = document.createElement('div'); div.innerHTML = html;
+  const sel = window.getSelection();
+  if(savedSelectionRange) {
+    sel.removeAllRanges(); sel.addRange(savedSelectionRange);
+    savedSelectionRange.insertNode(div); savedSelectionRange.collapse(false);
+  } else {
+    const active = document.querySelector('.edit-active');
+    if(active) active.appendChild(div);
+  }
+}
+function unveilSpoilerContainerDirect(blindElement) {
+  const container = blindElement.closest('.spoiler-container');
+  if(container) {
+    container.classList.add('unveiled');
+    const content = container.querySelector('.spoiler-content');
+    if(content) { content.style.opacity = "1"; content.style.pointerEvents = "auto"; }
+    blindElement.style.display = 'none';
+    // 컨트롤 바의 가리기 버튼 표시
+    const ctrlBar = container.querySelector('.spoiler-ctrl-bar');
+    if(ctrlBar) {
+      ctrlBar.style.display = 'flex';
+      const delBtn = ctrlBar.querySelector('.spoiler-del-btn');
+      if(delBtn) delBtn.style.display = isCharacterEditMode ? 'inline-block' : 'none';
+    }
+  }
+}
+function reveilSpoilerContainer(btn) {
+  const container = btn.closest('.spoiler-container');
+  if(container) {
+    container.classList.remove('unveiled');
+    const blind = container.querySelector('.spoiler-blind');
+    const content = container.querySelector('.spoiler-content');
+    if(blind) blind.style.display = 'flex';
+    if(content) { content.style.opacity = "0.2"; content.style.pointerEvents = "none"; }
+    const ctrlBar = container.querySelector('.spoiler-ctrl-bar');
+    if(ctrlBar) ctrlBar.style.display = 'none';
+  }
+}
+function deleteSpoilerContainer(btn) {
+  const container = btn.closest('.spoiler-container');
+  if(container) container.remove();
+}
+
+/* ==================== 📊 방사형 레이더 스탯 차트(Radar Chart) 라이브 렌더 엔진 ==================== */
+function toggleRadarChartBuildVisiblity() {
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  char.useRadar = !char.useRadar;
+  saveCreatorToFirebase(currentCreator); // useRadar 상태 즉시 저장 (누락 시 Firebase 재수신으로 덮어씌워짐)
+  renderCharacterDocument();
+  if(isCharacterEditMode) {
+     isCharacterEditMode = false; toggleCharacterEditMode(); // 상태 토글 동기화 유지
+  }
+}
+
+function updateLiveRadarStatValue(statName, val) {
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  char.radarData[statName] = parseInt(val);
+  document.getElementById(`lblStatVal-${statName}`).textContent = val;
+  drawCharacterRadarGraphicSvg(char.radarData);
+  saveCreatorToFirebase(currentCreator);
+}
+
+function renameRadarStat(oldName, newName) {
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  if(!newName || newName === oldName) return;
+  const newData = {};
+  Object.keys(char.radarData).forEach(k => { newData[k === oldName ? newName : k] = char.radarData[k]; });
+  char.radarData = newData;
+  drawCharacterRadarGraphicSvg(char.radarData);
+  saveCreatorToFirebase(currentCreator);
+}
+
+function deleteRadarStat(statName) {
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  if(Object.keys(char.radarData).length <= 3) return alert('스탯은 최소 3개 이상 유지해야 합니다.');
+  delete char.radarData[statName];
+  drawCharacterRadarGraphicSvg(char.radarData);
+  saveCreatorToFirebase(currentCreator);
+}
+
+function addRadarStat() {
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  if(Object.keys(char.radarData).length >= 8) return alert('스탯은 최대 8개까지 추가할 수 있습니다.');
+  const name = prompt('새 스탯 이름을 입력하세요:', '새 스탯');
+  if(!name || char.radarData[name] !== undefined) return;
+  char.radarData[name] = 50;
+  drawCharacterRadarGraphicSvg(char.radarData);
+  saveCreatorToFirebase(currentCreator);
+}
+
+function updateRadarChartTitle(val) {
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  char.radarTitle = val;
+  const titleEl = document.getElementById('radarChartTitleTextEl');
+  if(titleEl) titleEl.textContent = val;
+  saveCreatorToFirebase(currentCreator);
+}
+
+function drawCharacterRadarGraphicSvg(data) {
+  const container = document.getElementById('characterRadarChartInteractiveCanvasBox');
+  if(!container) return;
+  const char = (currentCreator && currentFolder && currentCharacter) 
+    ? charaverseDatabase[currentCreator]?.folders?.find(f => f.name === currentFolder)?.characters?.find(c => c.name === currentCharacter)
+    : null;
+  
+  const keys = Object.keys(data); const total = keys.length;
+  const center = 120; const radius = 80;
+  
+  let gridPaths = "";
+  for(let r=1; r<=4; r++) {
+    let curR = (radius / 4) * r; let pStr = "";
+    for(let i=0; i<total; i++) {
+      let angle = (Math.PI * 2 / total) * i - Math.PI / 2;
+      let x = center + curR * Math.cos(angle); let y = center + curR * Math.sin(angle);
+      pStr += (i === 0 ? "M" : "L") + ` ${x} ${y}`;
+    }
+    gridPaths += `<path d="${pStr} Z" fill="none" stroke="var(--border2)" stroke-width="1" />`;
+  }
+
+  let axisLines = ""; let labelTexts = ""; let polyPoints = [];
+  keys.forEach((k, i) => {
+    let angle = (Math.PI * 2 / total) * i - Math.PI / 2;
+    let ax = center + radius * Math.cos(angle); let ay = center + radius * Math.sin(angle);
+    axisLines += `<line x1="${center}" y1="${center}" x2="${ax}" y2="${ay}" stroke="var(--border)" stroke-width="1" />`;
+
+    let lx = center + (radius + 22) * Math.cos(angle); let ly = center + (radius + 10) * Math.sin(angle);
+    labelTexts += `<text x="${lx}" y="${ly}" font-size="11px" font-weight="bold" fill="var(--text)" text-anchor="middle">${k}(${data[k]})</text>`;
+
+    let valR = (radius * (data[k] / 100));
+    let px = center + valR * Math.cos(angle); let py = center + valR * Math.sin(angle);
+    polyPoints.push(`${px},${py}`);
+  });
+
+  let innerEditorRow = "";
+  if(isCharacterEditMode) {
+    innerEditorRow += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+      <span style="font-weight:bold; color:var(--teal); font-size:12px">🛠️ 스탯 편집 패널</span>
+      <button onclick="addRadarStat()" style="font-size:11px; padding:3px 8px; border:1px solid var(--teal); border-radius:4px; color:var(--teal); cursor:pointer; background:none">＋ 스탯 추가</button>
+    </div>`;
+    keys.forEach(k => {
+      const safeK = k.replace(/'/g, "\'");
+      innerEditorRow += `<div class="radar-stat-row" style="grid-template-columns: auto 1fr 40px 22px 22px; gap:6px">
+        <input type="text" value="${k}" style="font-size:11px; border:1px solid var(--border2); border-radius:4px; padding:2px 6px; width:68px; background:var(--white); color:var(--text)"
+          onblur="renameRadarStat('${safeK}', this.value)">
+        <input type="range" min="1" max="100" value="${data[k]}" oninput="updateLiveRadarStatValue('${safeK}', this.value)">
+        <b id="lblStatVal-${k}" style="font-size:11px">${data[k]}</b>
+        <button onclick="deleteRadarStat('${safeK}')" style="font-size:11px; border:none; background:none; color:#dc2626; cursor:pointer; font-weight:bold" title="삭제">✕</button>
+      </div>`;
+    });
+  }
+
+  container.innerHTML = `
+    <div class="radar-chart-outer-box ${globalSelectedFontClass}">
+      <div style="font-size:13px; font-weight:bold; color:var(--accent); display:flex; align-items:center; gap:6px;">
+        📊 <span id="radarChartTitleTextEl" 
+          contenteditable="${isCharacterEditMode}" 
+          style="outline:none; border-bottom:${isCharacterEditMode?'1px dashed var(--accent)':'none'}; min-width:60px;"
+          onblur="updateRadarChartTitle(this.textContent)"
+          title="${isCharacterEditMode?'클릭해서 제목 수정':''}">
+          ${char && char.radarTitle ? char.radarTitle : '인물 다면 능력치 스탯 등급 맵'}
+        </span>
+      </div>
+      <div class="radar-chart-wrapper">
+        <svg width="240" height="240">
+          ${gridPaths} ${axisLines}
+          <polygon points="${polyPoints.join(' ')}" fill="rgba(107, 79, 216, 0.22)" stroke="var(--accent)" stroke-width="2.5" />
+          ${labelTexts}
+        </svg>
+      </div>
+      <div class="radar-chart-editor-panel" id="radarChartEditorPanelBoxUi" style="display:${isCharacterEditMode?'flex':'none'}">
+         ${innerEditorRow}
+      </div>
+    </div>`;
+}
+
+/* ==================== 🎨 지능형 실시간 마크다운 및 나무위키 단축키 파서 ==================== */
+function executeLiveMarkdownShortcutParser(element) {
+  let html = element.innerHTML;
+  let originalLength = html.length;
+
+  // 1. 나무위키 스타일 굵게 매크로 (''텍스트'') -> <strong>
+  html = html.replace(/''([^']+)''/g, "<strong>$1</strong>");
+  // 2. 마크다운 스타일 굵게 (**텍스트**) -> <strong>
+  html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  // 3. 마크다운 스타일 기울임 (*텍스트*) -> <em>
+  html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+  // 4. 마크다운 스타일 밑줄 (__텍스트__) -> <u>
+  html = html.replace(/__([^_]+)__/g, "<u>$1</u>");
+
+  if(html.length !== originalLength) {
+    // 커서 이탈 방지형 롤백 트리거 주입
+    let selection = window.getSelection();
+    let range = selection.getRangeAt(0);
+    let offset = range.startOffset;
+    element.innerHTML = html;
+    
+    // 포커스 세이프 재설정
+    let newRange = document.createRange();
+    newRange.setStart(element, element.childNodes.length);
+    newRange.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(newRange);
+  }
+}
+
+/* ==================== 🛠️ 관계도 쌍방 곡선 분리 및 정밀 연산 고도화 ==================== */
+function initInteractiveCanvasEngine(rel) {
+  if(!rel) rel = { nodes: [], edges: [] };
+  if(!rel.nodes) rel.nodes = [];
+  if(!rel.edges) rel.edges = [];
+  const viewport = document.getElementById('relCanvasViewport');
+  const svg = document.getElementById('relSvgLayer'); if(!viewport || !svg) return;
+  viewport.querySelectorAll('.rel-node-circle').forEach(n => n.remove());
+
+  rel.nodes.forEach(nd => {
+    const nodeEl = document.createElement('div');
+    nodeEl.className = "rel-node-circle"; nodeEl.id = `nodeEl-${nd.id}`;
+    nodeEl.style.left = nd.x + "px"; nodeEl.style.top = nd.y + "px";
+    let avHtml = nd.img ? `<img src="${nd.img}" style="width:100%; height:100%; object-fit:cover;">` : `👤`;
+    nodeEl.innerHTML = `
+      <button class="rel-node-x-btn" onclick="deleteCanvasNodeEntity(event, '${nd.id}')">X</button>
+      <div class="rel-node-avatar-slot" onclick="triggerCanvasNodeImgUpload('${nd.id}')">${avHtml}</div>
+      <div class="rel-node-text-label" contenteditable="${isCharacterEditMode}" onblur="updateCanvasNodeNameInline('${nd.id}', this)">${nd.name}</div>
+      <div class="rel-node-drag-handle" id="handle-${nd.id}">✛</div>
+      <input type="file" id="fileNode-${nd.id}" accept="image/*" style="display:none" onchange="uploadCanvasNodeImgInline(event, '${nd.id}')">`;
+    viewport.appendChild(nodeEl);
+
+    if(isCharacterEditMode) {
+      nodeEl.querySelector('.rel-node-x-btn').style.display = 'flex';
+      const handleEl = nodeEl.querySelector('.rel-node-drag-handle');
+      handleEl.style.display = 'flex'; setupDragAndDropEvents(handleEl, nodeEl, nd, rel);
+    }
+  });
+  drawRelationshipArrowsSvg(rel);
+}
+
+function drawRelationshipArrowsSvg(rel) {
+  const svg = document.getElementById('relSvgLayer'); if(!svg) return;
+  if(!rel) return;
+  if(!rel.edges) rel.edges = [];
+  if(!rel.nodes) rel.nodes = [];
+  svg.innerHTML = `<defs></defs>`;
+
+  // 같은 노드 쌍(정렬키) 내 각 엣지가 몇 번째인지, 그리고 반대 방향이 있는지 파악
+  // oppositePairMap: 정렬키 → 양방향 모두 존재하는지 (A→B 와 B→A 가 둘 다 있는 경우)
+  const sortedPairEdgeList = {}; // 정렬키 → [{ed, dir}] (dir: 'normal'|'reverse')
+  rel.edges.forEach(ed => {
+    const sortedKey = [ed.from, ed.to].sort().join('-');
+    if(!sortedPairEdgeList[sortedKey]) sortedPairEdgeList[sortedKey] = [];
+    sortedPairEdgeList[sortedKey].push(ed);
+  });
+
+  // 각 엣지를 순서대로 그림
+  const drawnSameDir = {}; // "from-to" 키 → 이미 그린 횟수 (같은 방향 중복)
+
+  rel.edges.forEach((ed) => {
+    const fromNd = rel.nodes.find(n => n.id === ed.from);
+    const toNd = rel.nodes.find(n => n.id === ed.to); if(!fromNd || !toNd) return;
+
+    const fx = fromNd.x + 35; const fy = fromNd.y + 35;
+    const tx = toNd.x + 35; const ty = toNd.y + 35;
+
+    const dx = tx - fx; const dy = ty - fy;
+    const dist = Math.sqrt(dx * dx + dy * dy); if(dist === 0) return;
+    const angle = Math.atan2(dy, dx);
+    const nx = -Math.sin(angle); const ny = Math.cos(angle); // 법선벡터
+
+    const sortedKey = [ed.from, ed.to].sort().join('-');
+    const edgesInPair = sortedPairEdgeList[sortedKey];
+    // 반대 방향 엣지가 있는지 (A→B 이면 B→A 가 있는지)
+    const hasOpposite = edgesInPair.some(e => e.from === ed.to && e.to === ed.from);
+    // 같은 방향 엣지 카운트 (A→B 가 몇 개인지)
+    const sameDirKey = ed.from + '->' + ed.to;
+    drawnSameDir[sameDirKey] = (drawnSameDir[sameDirKey] || 0) + 1;
+    const sameDirIdx = drawnSameDir[sameDirKey]; // 1부터 시작
+
+    // 현재 방향 기준으로 이 엣지가 정렬키 기준 "정방향"인지 판단
+    const isNormal = ed.from < ed.to || (ed.from === sortedKey.split('-')[0]);
+
+    let pathD, textX, textY;
+    const startX = fx + 35 * Math.cos(angle); const startY = fy + 35 * Math.sin(angle);
+    const endX = tx - 38 * Math.cos(angle); const endY = ty - 38 * Math.sin(angle);
+
+    if (hasOpposite) {
+      // 반대 방향이 있는 경우: 곡선으로 분리 (기존 로직)
+      const curveFactor = isNormal ? 55 : -55;
+      const midX = (fx + tx) / 2; const midY = (fy + ty) / 2;
+      const cpX = midX + nx * curveFactor; const cpY = midY + ny * curveFactor;
+      const sAngle = Math.atan2(cpY - fy, cpX - fx);
+      const eAngle = Math.atan2(cpY - ty, cpX - tx);
+      const adjStartX = fx + 35 * Math.cos(sAngle); const adjStartY = fy + 35 * Math.sin(sAngle);
+      const adjEndX = tx + 38 * Math.cos(eAngle); const adjEndY = ty + 38 * Math.sin(eAngle);
+      pathD = `M ${adjStartX} ${adjStartY} Q ${cpX} ${cpY} ${adjEndX} ${adjEndY}`;
+      textX = (adjStartX + cpX * 2 + adjEndX) / 4; textY = (adjStartY + cpY * 2 + adjEndY) / 4;
+      textY += isNormal ? -16 : 16;
+    } else if (sameDirIdx > 1) {
+      // 같은 방향 중복: 나란히 평행 오프셋으로 분리
+      const offset = (sameDirIdx - 1) * 14; // 14px씩 옆으로
+      const sign = sameDirIdx % 2 === 0 ? 1 : -1;
+      const offX = nx * offset * sign; const offY = ny * offset * sign;
+      pathD = `M ${startX + offX} ${startY + offY} L ${endX + offX} ${endY + offY}`;
+      textX = (startX + endX) / 2 + offX; textY = (startY + endY) / 2 + offY - 8;
+    } else {
+      // 단일 직선
+      pathD = `M ${startX} ${startY} L ${endX} ${endY}`;
+      textX = (startX + endX) / 2; textY = (startY + endY) / 2 - 8;
+    }
+
+    const markerId = `marker-${ed.from}-${ed.to}-${rel.edges.indexOf(ed)}`;
+    svg.querySelector('defs').innerHTML += `
+      <marker id="${markerId}" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L7,3 Z" fill="${ed.color || 'var(--muted2)'}" />
+      </marker>
+      <marker id="${markerId}-start" markerWidth="8" markerHeight="8" refX="1" refY="3" orient="auto-start-reverse">
+        <path d="M0,0 L0,6 L7,3 Z" fill="${ed.color || 'var(--muted2)'}" />
+      </marker>`;
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", pathD); path.setAttribute("stroke", ed.color || "var(--border2)");
+    path.setAttribute("stroke-width", "2.5"); path.setAttribute("fill", "none");
+    path.setAttribute("marker-end", `url(#${markerId})`);
+    // 양방향 화살표: 시작점에도 화살표 추가
+    if(ed.bidirectional) path.setAttribute("marker-start", `url(#${markerId}-start)`);
+    // 편집 모드에서 선 더블클릭 → 수정 팝업
+    const edIdx = rel.edges.indexOf(ed);
+    path.style.cursor = 'pointer';
+    path.setAttribute("stroke-linecap","round");
+    // 클릭 영역 넓히는 투명 path
+    const hitPath = document.createElementNS("http://www.w3.org/2000/svg","path");
+    hitPath.setAttribute("d", pathD); hitPath.setAttribute("stroke","transparent");
+    hitPath.setAttribute("stroke-width","18"); hitPath.setAttribute("fill","none");
+    hitPath.style.cursor = 'pointer';
+    hitPath.style.pointerEvents = 'all';
+    // 편집 모드에서만 더블클릭 수정 팝업 (항상 더블클릭으로 열림)
+    hitPath.addEventListener('dblclick', function(ev){ ev.stopPropagation(); openEdgeEditPopup(edIdx); });
+    path.addEventListener('dblclick', function(ev){ ev.stopPropagation(); openEdgeEditPopup(edIdx); });
+    svg.appendChild(path); svg.appendChild(hitPath);
+
+    const tEl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    tEl.setAttribute("x", textX); tEl.setAttribute("y", textY);
+    tEl.setAttribute("fill", ed.color || "var(--text)"); tEl.setAttribute("font-size", "11px");
+    tEl.setAttribute("font-weight", "bold"); tEl.setAttribute("text-anchor", "middle");
+    tEl.textContent = ed.text; svg.appendChild(tEl);
+  });
+}
+
+function setupDragAndDropEvents(handle, el, nodeData, rel) {
+  let isDragging = false; let startX, startY;
+  // mousemove/mouseup은 handle 단위로 등록해 document 누적 방지
+  function onMouseMove(e) {
+    if(!isDragging) return;
+    let nextX = e.clientX - startX; let nextY = e.clientY - startY;
+    nextX = Math.max(0, Math.min(nextX, 750)); nextY = Math.max(0, Math.min(nextY, 380));
+    nodeData.x = nextX; nodeData.y = nextY;
+    el.style.left = nextX + "px"; el.style.top = nextY + "px";
+    drawRelationshipArrowsSvg(rel);
+  }
+  function onMouseUp() {
+    if(isDragging) {
+      isDragging = false;
+      _lsSave();
+      // 저장 완료 후 1500ms 뒤에 드래그 플래그 해제
+      setTimeout(() => { _relDragging = false; }, 1500);
+    } else { isDragging = false; _relDragging = false; }
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+  }
+  handle.addEventListener('mousedown', (e) => {
+    e.stopPropagation(); e.preventDefault(); isDragging = true; _relDragging = true;
+    startX = e.clientX - nodeData.x; startY = e.clientY - nodeData.y;
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  });
+}
+
+function updateCanvasNodeNameInline(id, element) {
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  if(!char.relationships || !char.relationships.nodes) return;
+  const nd = char.relationships.nodes.find(n => n.id === id); if(nd) nd.name = element.textContent.trim();
+  drawRelationshipArrowsSvg(char.relationships);
+  saveCreatorToFirebase(currentCreator);
+}
+function triggerCanvasNodeImgUpload(id) { if(isCharacterEditMode) document.getElementById(`fileNode-${id}`).click(); }
+function uploadCanvasNodeImgInline(e, id) {
+  const file = e.target.files[0]; if(!file) return;
+  compressFile(file, 200, 200, 0.82, function(dataUrl) {
+    const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+    const nd = char.relationships.nodes.find(n => n.id === id); if(nd) nd.img = dataUrl;
+    saveCreatorToFirebase(currentCreator);
+    initInteractiveCanvasEngine(char.relationships);
+  });
+}
+function addNewRelNodeOnCanvas() {
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  if(!char.relationships) char.relationships = { nodes: [], edges: [] };
+  if(!char.relationships.nodes) char.relationships.nodes = [];
+  if(!char.relationships.edges) char.relationships.edges = [];
+
+  // 기존 노드들 위치를 DOM에서 먼저 동기화 (기존 위치 보존)
+  char.relationships.nodes.forEach(nd => {
+    const el = document.getElementById('nodeEl-' + nd.id);
+    if(el) { nd.x = parseInt(el.style.left) || nd.x; nd.y = parseInt(el.style.top) || nd.y; }
+  });
+
+  const nd = { id: "nd-" + Date.now(), name: "인물", x: 120 + Math.random()*200, y: 120 + Math.random()*150, img: "" };
+  char.relationships.nodes.push(nd);
+  saveCreatorToFirebase(currentCreator);
+
+  // 새 노드만 DOM에 추가 (전체 재렌더 금지)
+  const viewport = document.getElementById('relCanvasViewport'); if(!viewport) return;
+  const nodeEl = document.createElement('div');
+  nodeEl.className = "rel-node-circle"; nodeEl.id = `nodeEl-${nd.id}`;
+  nodeEl.style.left = nd.x + "px"; nodeEl.style.top = nd.y + "px";
+  nodeEl.innerHTML = `
+    <button class="rel-node-x-btn" style="display:flex" onclick="deleteCanvasNodeEntity(event, '${nd.id}')">X</button>
+    <div class="rel-node-avatar-slot" onclick="triggerCanvasNodeImgUpload('${nd.id}')">👤</div>
+    <div class="rel-node-text-label" contenteditable="true" onblur="updateCanvasNodeNameInline('${nd.id}', this)">${nd.name}</div>
+    <div class="rel-node-drag-handle" id="handle-${nd.id}" style="display:flex">✛</div>
+    <input type="file" id="fileNode-${nd.id}" accept="image/*" style="display:none" onchange="uploadCanvasNodeImgInline(event, '${nd.id}')">`;
+  viewport.appendChild(nodeEl);
+  const handleEl = nodeEl.querySelector('.rel-node-drag-handle');
+  setupDragAndDropEvents(handleEl, nodeEl, nd, char.relationships);
+  drawRelationshipArrowsSvg(char.relationships);
+}
+function deleteCanvasNodeEntity(e, id) {
+  e.stopPropagation();
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  if(!char.relationships) char.relationships = { nodes: [], edges: [] };
+  if(!char.relationships.nodes) char.relationships.nodes = [];
+  if(!char.relationships.edges) char.relationships.edges = [];
+  char.relationships.nodes = char.relationships.nodes.filter(n => n.id !== id);
+  char.relationships.edges = char.relationships.edges.filter(ed => ed.from !== id && ed.to !== id);
+  saveCreatorToFirebase(currentCreator);
+  initInteractiveCanvasEngine(char.relationships);
+}
+
+/* 위키 종합 도큐먼트 빌더 엔진 */
+function renderCharacterDocument() {
+  const fol = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder);
+  const char = fol.characters.find(c => c.name === currentCharacter);
+
+  document.getElementById('docCharName').textContent = char.name;
+  document.getElementById('documentAvatar').innerHTML = char.isAvatarImg ? `<img src="${char.avatar}" style="width:100%; height:100%; object-fit:cover;">` : char.avatar || '👤';
+  
+  const cover = document.getElementById('charDocumentCover');
+  cover.style.height = (char.coverHeight || 140) + "px";
+  cover.style.backgroundImage = char.coverImg ? `url('${char.coverImg}')` : '';
+
+  // 이 캐릭터가 포함된 페어 D-DAY만 프로필에 표시 (페어 데이터는 캐릭터에 복사하지 않음)
+  var charPairWrap = document.getElementById('characterPairDdayBox');
+  if(!charPairWrap){ charPairWrap=document.createElement('div'); charPairWrap.id='characterPairDdayBox'; charPairWrap.style.cssText='margin:12px 0 18px;'; cover.parentNode.insertBefore(charPairWrap, cover.nextSibling); }
+  var charKey = currentFolder+'///'+currentCharacter;
+  var charPairs = getPairDdayData().filter(function(x){return x.aKey===charKey||x.bKey===charKey;});
+  charPairWrap.innerHTML = charPairs.length ? '<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:7px">💙 페어 D-DAY</div>'+charPairs.map(function(x){var other=x.aKey===charKey?x.bName:x.aName;return '<div style="display:flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--white);border-radius:10px;padding:7px 9px;margin-bottom:6px;">'+(x.photo?'<img src="'+x.photo+'" style="width:150px;height:150px;object-fit:contain;object-position:center;border-radius:14px;image-rendering:auto;background:#f7f7f7">':'')+'<div style="flex:1;min-width:0"><div style="font-size:10px;color:var(--muted)">💙 '+pairEsc(other)+'와 함께</div><b style="font-size:12px">'+pairEsc(x.title)+'</b></div><strong style="font-size:18px;color:var(--accent)">'+calcDday(x.date)+'</strong></div>'}).join('') : '';
+
+  // 스탯 차트 렌더 영역 제어
+  const chartBox = document.getElementById('characterRadarChartInteractiveCanvasBox');
+  if(char.useRadar) {
+    chartBox.style.display = "block";
+    drawCharacterRadarGraphicSvg(char.radarData);
+    document.getElementById('radarToggleControlTriggerBtn').textContent = "📊 스탯 차트 비활성화";
+  } else {
+    chartBox.style.display = "none";
+    document.getElementById('radarToggleControlTriggerBtn').textContent = "📊 스탯 차트 활성화";
+  }
+
+  const container = document.getElementById('dynamicSectionsContainer');
+  const tocContainer = document.getElementById('rightTocContainer');
+  container.innerHTML = ""; tocContainer.innerHTML = "";
+
+  char.sections.forEach((sec, sIdx) => {
+    const tocWrapper = document.createElement('div');
+    tocWrapper.className = "toc-link-wrapper";
+    tocWrapper.setAttribute('data-secid', sec.id);
+    tocWrapper.setAttribute('draggable', 'false');
+    tocWrapper.innerHTML = `
+      <span class="toc-drag-handle" title="드래그해서 순서 변경">⠿</span>
+      <span class="toc-link ${sIdx===0?'active':''}" id="tocLink-${sec.id}" onclick="scrollToSection('${sec.id}', this)">${sec.title}</span>
+      <span class="toc-edit-btn" id="tocEditIcon-${sec.id}" onclick="openEditTocModalPopup('${sec.id}', '${sec.title.replace(/'/g,"\'")}')">✏️</span>
+      <span class="toc-del-btn" id="tocDelIcon-${sec.id}" onclick="deleteCustomSection('${sec.id}')">❌</span>`;
+    tocContainer.appendChild(tocWrapper);
+
+    const secDivider = document.createElement('div');
+    secDivider.className = "divider"; secDivider.id = sec.id; secDivider.textContent = sec.title;
+    container.appendChild(secDivider);
+
+    if(sec.type === 'image') {
+      const w = char.imageWidth || "300"; const h = char.imageHeight || "400";
+      const imgBoxWrapper = document.createElement('div');
+      imgBoxWrapper.className = "full-shot-wrapper";
+      imgBoxWrapper.style.textAlign = char.imageAlign || "center";
+      let innerBoxHtml = char.image 
+        ? `<img src="${char.image}" style="width:100%; height:100%; object-fit:cover;">` 
+        : `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%; color:var(--muted2); gap:8px;">
+            <span style="font-size:40px">🖼️</span>
+            <span style="font-size:12px; font-weight:500;">전신 일러스트 / 이미지</span>
+            <span style="font-size:11px; opacity:0.7;">편집 모드에서 사진을 업로드하세요</span>
+           </div>`;
+      imgBoxWrapper.innerHTML = `
+        <div class="full-shot-box" id="innerFullShotBox" style="width:${w}px; height:${h}px; margin:${char.imageAlign==='center'?'0 auto':(char.imageAlign==='right'?'0 0 0 auto':'0')};">${innerBoxHtml}</div>
+        <div class="full-shot-control-panel" id="fullShotControlPanelBox" style="display:${isCharacterEditMode ? 'flex' : 'none'}">
+          <div style="display:flex; gap:6px">
+            <label class="btn" style="font-size:11px; padding:4px 8px">📸 파일 탐색기<input type="file" accept="image/*" style="display:none" onchange="uploadCharacterFullShot(event)"></label>
+            <button class="btn" style="font-size:11px; padding:4px 8px; color:#dc2626" onclick="clearCharacterFullShotImg()">사진 제거</button>
+            <button class="btn" style="font-size:11px; padding:4px 4px" onclick="changeCharacterFullShotAlign('left')">◀ 좌정렬</button>
+            <button class="btn" style="font-size:11px; padding:4px 4px" onclick="changeCharacterFullShotAlign('center')">■ 중앙</button>
+            <button class="btn" style="font-size:11px; padding:4px 4px" onclick="changeCharacterFullShotAlign('right')">▶ 우정렬</button>
+          </div>
+          <div class="slider-row"><span>가로</span><input type="range" min="150" max="600" value="${w}" oninput="resizeFullShotImg(this.value, 'w')"><b id="lblW">${w}px</b></div>
+          <div class="slider-row"><span>세로</span><input type="range" min="200" max="800" value="${h}" oninput="resizeFullShotImg(this.value, 'h')"><b id="lblH">${h}px</b></div>
+        </div>`;
+      container.appendChild(imgBoxWrapper);
+    } 
+    else if(sec.type === 'table') {
+      const tableWrap = document.createElement('div');
+      tableWrap.style.cssText = 'overflow:visible; position:relative;';
+      const table = document.createElement('table'); table.className = "info-table";
+      let tBody = "<tbody>";
+      sec.data.forEach((row, rIdx) => {
+        tBody += `<tr style="position:relative;">
+          <th class="wiki-editable-th-cell" data-secid="${sec.id}" data-index="${rIdx}" style="position:relative;">${row.k}</th>
+          <td class="wiki-editable-cell" data-secid="${sec.id}" data-index="${rIdx}">${row.v}</td>
+          <td class="row-control-btn-wrap" style="display:none; width:1%; white-space:nowrap; padding:3px 6px; border-left:1px solid var(--border); background:var(--surface); vertical-align:middle;">
+             <button class="row-ctrl-badge" onclick="moveTableRow('${sec.id}', ${rIdx}, -1)" style="color:var(--accent);border-color:var(--accent)">↑</button>
+             <button class="row-ctrl-badge" onclick="moveTableRow('${sec.id}', ${rIdx}, 1)" style="color:var(--accent);border-color:var(--accent)">↓</button>
+             <button class="row-ctrl-badge add" onclick="insertNewTableRowInlineFromNode('${sec.id}', ${rIdx})">＋행</button>
+             <button class="row-ctrl-badge del" onclick="deleteTableRowInlineFromNode('${sec.id}', ${rIdx})">삭제</button>
+          </td>
+        </tr>`;
+      });
+      tBody += "</tbody>";
+      table.innerHTML = tBody;
+      tableWrap.appendChild(table);
+
+      // 관계도 인터랙티브 캔버스 구역 결합
+      const relBlock = document.createElement('div');
+      relBlock.className = "rel-system-outer";
+      relBlock.innerHTML = `
+        <div class="rel-system-header">🔮 겹침 방지형 인터랙티브 인물 관계도 캔버스</div>
+        <div class="rel-toolbar" id="relToolbarWrapperContainer" style="display:${isCharacterEditMode ? 'flex' : 'none'}">
+          <button class="btn" onclick="addNewRelNodeOnCanvas()" style="color:var(--teal)">＋ 인물 원형 노드 추가</button>
+          <button class="btn" onclick="openIntegratedArrowLinkModal()" style="color:var(--accent)">⛓️ 관계 화살표 직접 연결</button>
+        </div>
+        <div class="rel-canvas-viewport ${globalSelectedFontClass}" id="relCanvasViewport"><svg class="rel-svg-layer" id="relSvgLayer"></svg></div>`;
+      container.appendChild(tableWrap);
+      container.appendChild(relBlock);
+      if(!char.relationships) char.relationships = { nodes: [], edges: [] };
+      // 저장 직후 renderCharacterDocument 호출 시엔 관계도 재초기화 건너뜀 (위치 보존)
+      if(!window._skipRelInit) {
+        setTimeout(() => initInteractiveCanvasEngine(char.relationships), 40);
+      } else {
+        // 관계도 컨테이너만 만들어두고 현재 메모리 데이터로 초기화
+        setTimeout(() => { window._skipRelInit = false; initInteractiveCanvasEngine(char.relationships); }, 40);
+      }
+    } 
+    else if(sec.type === 'text') {
+      const pBox = document.createElement('div');
+      var _savedFont = (char && char.fontClass) ? char.fontClass : globalSelectedFontClass;
+      pBox.className = "prose wiki-editable-block " + _savedFont; pBox.id = `editableBlock-${sec.id}`;
+      if(char.baseFontSize) pBox.style.fontSize = char.baseFontSize;
+      pBox.innerHTML = sec.data; container.appendChild(pBox);
+
+      // 마크다운 숏컷 실시간 단축키 타이핑 감지 리스너 바인딩
+      pBox.addEventListener('keyup', (e) => {
+        if(e.key === ' ' || e.key === 'Enter') { executeLiveMarkdownShortcutParser(pBox); }
+      });
+    }
+  });
+
+  let sHtml = '';
+  fol.characters.forEach(c => {
+    sHtml += `<div class="char-list-item ${c.name === currentCharacter?'active':''}" onclick="navigate('character','${currentCreator}','${currentFolder}','${c.name}')">
+      <div class="char-dot ${c.name === currentCharacter?'active':''}"></div>${c.name}
+    </div>`;
+  });
+  document.getElementById('sidebarCharList').innerHTML = sHtml;
+  
+  renderAutoFootnoteListViewArea();
+  injectSpoilerCtrlBars();
+}
+
+function injectSpoilerCtrlBars() {
+  document.querySelectorAll('.spoiler-container').forEach(container => {
+    if(container.querySelector('.spoiler-ctrl-bar')) return;
+    const isUnveiled = container.classList.contains('unveiled') || !container.querySelector('.spoiler-blind');
+    const bar = document.createElement('div');
+    bar.className = 'spoiler-ctrl-bar';
+    bar.style.display = isUnveiled ? 'flex' : 'none';
+    bar.innerHTML = `
+      <button class="spoiler-ctrl-btn" onclick="reveilSpoilerContainer(this)">🙈 다시 가리기</button>
+      <button class="spoiler-ctrl-btn del spoiler-del-btn" onclick="deleteSpoilerContainer(this)" style="display:${isCharacterEditMode?'inline-block':'none'}">🗑 블록 삭제</button>`;
+    container.insertBefore(bar, container.firstChild);
+
+    // 가림막이 아예 없는 경우(이미 remove()로 삭제된 구버전 데이터) 가림막 복원
+    if(!container.querySelector('.spoiler-blind')) {
+      const blind = document.createElement('div');
+      blind.className = 'spoiler-blind';
+      blind.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#2d2327,#4a353d);color:#fff;display:none;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border-radius:6px;z-index:20;';
+      blind.innerHTML = `<span style="font-weight:bold;font-size:13px;color:#ffb3cb;">⚠️ 잠겨진 스포일러 반전 가림막 구역</span><span style="font-size:11px;opacity:0.8;">클릭 시 가림막이 해제됩니다.</span>`;
+      blind.onclick = function(){ unveilSpoilerContainerDirect(blind); };
+      container.appendChild(blind);
+    }
+
+    // 가림막이 있지만 아직 unveiled 아닌 경우 클릭 시 컨트롤 바 표시 연결
+    const blind = container.querySelector('.spoiler-blind');
+    if(blind && !blind._ctrlBound) {
+      blind._ctrlBound = true;
+      const origOnclick = blind.onclick;
+      blind.onclick = function(e) {
+        if(origOnclick) origOnclick.call(this, e);
+        else unveilSpoilerContainerDirect(blind);
+      };
+    }
+  });
+}
+
+function openIntegratedArrowLinkModal() {
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  if(!char.relationships) char.relationships = { nodes: [], edges: [] };
+  if(!char.relationships.nodes) char.relationships.nodes = [];
+  const rel = char.relationships; if(rel.nodes.length < 2) return alert('최소 2명 이상의 인물 노드가 필요합니다.');
+  let fromOptions = rel.nodes.map(n => `<option value="${n.id}">${n.name}</option>`).join('');
+  
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">인물 관계 화살표 형성 에디터</div>
+    <div class="modal-body-form">
+      <div class="form-group"><label class="form-label">출발지 인물</label><select id="modalEdgeFrom" class="form-select">${fromOptions}</select></div>
+      <div class="form-group"><label class="form-label">도착지 인물</label><select id="modalEdgeTo" class="form-select">${fromOptions}</select></div>
+      <div class="form-group"><label class="form-label">관계 내용 타이틀</label><input type="text" id="modalEdgeText" class="form-input" placeholder="예: 라이벌"></div>
+      <div class="form-group">
+        <label class="form-label">화살표 선 색상</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="color" id="modalEdgeCustomColorPicker" value="var(--accent)" style="width:44px;height:36px;border:1px solid var(--border2);border-radius:6px;padding:2px;cursor:pointer">
+          <input type="text" id="modalEdgeColorHex" placeholder="var(--accent)" maxlength="7" value="var(--accent)"
+            style="flex:1;padding:9px 12px;border:1px solid var(--border2);border-radius:6px;font-size:14px;background:var(--bg);color:var(--text)">
+        </div>
+      </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:var(--text)">
+          <input type="checkbox" id="modalEdgeBidir" style="width:16px;height:16px;accent-color:var(--accent)">
+          <span>양방향 화살표 (↔)</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="submitIntegratedEdgeArrowLink()">연결 완료</button></div>`;
+  document.getElementById('globalModalOverlay').style.display = "flex";
+  // 색상 피커 ↔ hex 입력 양방향 연동 (모달 렌더 후 직접 이벤트 바인딩)
+  const picker = document.getElementById('modalEdgeCustomColorPicker');
+  const hexIn = document.getElementById('modalEdgeColorHex');
+  picker.addEventListener('input', function(){ hexIn.value = this.value; });
+  hexIn.addEventListener('input', function(){
+    if(/^#[0-9a-fA-F]{6}$/.test(this.value)) picker.value = this.value;
+  });
+}
+function submitIntegratedEdgeArrowLink() {
+  const from = document.getElementById('modalEdgeFrom').value; const to = document.getElementById('modalEdgeTo').value;
+  if(from === to) return alert('자기 자신에게 선을 그을 수 없습니다.');
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  if(!char.relationships) char.relationships = { nodes: [], edges: [] };
+  if(!char.relationships.edges) char.relationships.edges = [];
+  var hexInput = document.getElementById('modalEdgeColorHex');
+  var colorVal = (hexInput && /^#[0-9a-fA-F]{6}$/.test(hexInput.value)) ? hexInput.value : document.getElementById('modalEdgeCustomColorPicker').value;
+  var bidir = document.getElementById('modalEdgeBidir') && document.getElementById('modalEdgeBidir').checked;
+  char.relationships.edges.push({
+    from: from, to: to, text: document.getElementById('modalEdgeText').value.trim() || "관계",
+    color: colorVal, bidirectional: bidir
+  });
+  saveCreatorToFirebase(currentCreator); closeGlobalModal(); initInteractiveCanvasEngine(char.relationships);
+}
+
+function openEdgeEditPopup(edIdx) {
+  var char = charaverseDatabase[currentCreator].folders.find(function(f){return f.name===currentFolder;}).characters.find(function(c){return c.name===currentCharacter;});
+  if(!char.relationships || !char.relationships.edges) return;
+  var ed = char.relationships.edges[edIdx]; if(!ed) return;
+  var rel = char.relationships;
+  var fromOpts = rel.nodes.map(function(n){ return '<option value="'+n.id+'"'+(n.id===ed.from?' selected':'')+'>'+n.name+'</option>'; }).join('');
+  var toOpts   = rel.nodes.map(function(n){ return '<option value="'+n.id+'"'+(n.id===ed.to  ?' selected':'')+'>'+n.name+'</option>'; }).join('');
+  var edColor = ed.color || 'var(--accent)';
+  var modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">🔗 관계선 수정</div>
+    <div class="modal-body-form">
+      <div class="form-group"><label class="form-label">출발 인물</label><select id="editEdgeFrom" class="form-select">${fromOpts}</select></div>
+      <div class="form-group"><label class="form-label">도착 인물</label><select id="editEdgeTo" class="form-select">${toOpts}</select></div>
+      <div class="form-group"><label class="form-label">관계 내용</label><input type="text" id="editEdgeText" class="form-input" value="${(ed.text||'').replace(/"/g,'&quot;')}"></div>
+      <div class="form-group"><label class="form-label">선 색상</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="color" id="editEdgeColorPicker" value="${edColor}" style="width:44px;height:36px;border:1px solid var(--border2);border-radius:6px;padding:2px;cursor:pointer">
+          <input type="text" id="editEdgeColorHex" value="${edColor}" maxlength="7" placeholder="var(--accent)" style="flex:1;padding:9px 12px;border:1px solid var(--border2);border-radius:6px;font-size:14px;background:var(--bg);color:var(--text)">
+        </div>
+      </div>
+      <div class="form-group"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:var(--text)"><input type="checkbox" id="editEdgeBidir" ${ed.bidirectional?'checked':''} style="width:16px;height:16px;accent-color:var(--accent)"><span>양방향 화살표 (↔)</span></label></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="border-color:#fca5a5;color:#dc2626" onclick="deleteEdgeFromPopup(${edIdx})">🗑 삭제</button>
+      <button class="btn" onclick="closeGlobalModal()">취소</button>
+      <button class="btn primary" onclick="saveEdgeFromPopup(${edIdx})">저장</button>
+    </div>`;
+  document.getElementById('globalModalOverlay').style.display = 'flex';
+  // 색상 피커 ↔ hex 입력 양방향 연동 (렌더 후 직접 바인딩)
+  var epicker = document.getElementById('editEdgeColorPicker');
+  var ehex = document.getElementById('editEdgeColorHex');
+  epicker.addEventListener('input', function(){ ehex.value = this.value; });
+  ehex.addEventListener('input', function(){ if(/^#[0-9a-fA-F]{6}$/.test(this.value)) epicker.value = this.value; });
+}
+function saveEdgeFromPopup(edIdx) {
+  var char = charaverseDatabase[currentCreator].folders.find(function(f){return f.name===currentFolder;}).characters.find(function(c){return c.name===currentCharacter;});
+  var ed = char.relationships.edges[edIdx]; if(!ed) return;
+  var hexInput = document.getElementById('editEdgeColorHex');
+  var colorVal = (hexInput && /^#[0-9a-fA-F]{6}$/.test(hexInput.value)) ? hexInput.value : document.getElementById('editEdgeColorPicker').value;
+  ed.from = document.getElementById('editEdgeFrom').value;
+  ed.to   = document.getElementById('editEdgeTo').value;
+  ed.text = document.getElementById('editEdgeText').value.trim() || '관계';
+  ed.color = colorVal;
+  ed.bidirectional = document.getElementById('editEdgeBidir').checked;
+  closeGlobalModal(); saveCreatorToFirebase(currentCreator); initInteractiveCanvasEngine(char.relationships);
+}
+function deleteEdgeFromPopup(edIdx) {
+  var char = charaverseDatabase[currentCreator].folders.find(function(f){return f.name===currentFolder;}).characters.find(function(c){return c.name===currentCharacter;});
+  char.relationships.edges.splice(edIdx, 1);
+  closeGlobalModal(); saveCreatorToFirebase(currentCreator); initInteractiveCanvasEngine(char.relationships);
+}
+
+function syncTableDataFromDOM(secId) {
+  // 행 추가/삭제 전에 현재 DOM의 내용을 데이터에 반영
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  const sec = char.sections.find(s => s.id === secId); if(!sec || sec.type !== 'table') return;
+  const targetThs = document.querySelectorAll(`.wiki-editable-th-cell[data-secid="${secId}"]`);
+  const targetTds = document.querySelectorAll(`.wiki-editable-cell[data-secid="${secId}"]`);
+  let nextArray = [];
+  targetThs.forEach((th, idx) => { nextArray.push({ k: th.innerHTML, v: targetTds[idx] ? targetTds[idx].innerHTML : '' }); });
+  if(nextArray.length > 0) sec.data = nextArray;
+}
+
+function insertNewTableRowInlineFromNode(secId, index) {
+  syncAllSectionDataFromDOM();
+  syncTableDataFromDOM(secId);
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  const sec = char.sections.find(s => s.id === secId);
+  sec.data.splice(index + 1, 0, { k: "새 명세명", v: "내용 기입" });
+  isCharacterEditMode = true;
+  renderCharacterDocument();
+  setTimeout(reactivateEditModeUI, 30);
+  // 비동기 백그라운드 저장 (실패해도 화면은 이미 업데이트됨)
+  saveCreatorToFirebase(currentCreator);
+}
+function deleteTableRowInlineFromNode(secId, index) {
+  syncAllSectionDataFromDOM();
+  syncTableDataFromDOM(secId);
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  const sec = char.sections.find(s => s.id === secId);
+  if(sec.data.length <= 1) return alert('명세는 최소 1개 이상 존재해야 합니다.');
+  sec.data.splice(index, 1);
+  isCharacterEditMode = true;
+  renderCharacterDocument();
+  setTimeout(reactivateEditModeUI, 30);
+  saveCreatorToFirebase(currentCreator);
+}
+
+function moveTableRow(secId, index, dir) {
+  syncAllSectionDataFromDOM();
+  syncTableDataFromDOM(secId);
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  const sec = char.sections.find(s => s.id === secId);
+  const targetIdx = index + dir;
+  if(targetIdx < 0 || targetIdx >= sec.data.length) return;
+  const tmp = sec.data[index];
+  sec.data[index] = sec.data[targetIdx];
+  sec.data[targetIdx] = tmp;
+  isCharacterEditMode = true;
+  renderCharacterDocument();
+  setTimeout(reactivateEditModeUI, 30);
+  saveCreatorToFirebase(currentCreator);
+}
+
+function toggleCharacterEditMode() {
+  isCharacterEditMode = !isCharacterEditMode;
+  const btn = document.getElementById('globalCharacterEditBtn');
+  const toolbar = document.getElementById('wikiEditorToolbar');
+  const tocAddBtn = document.getElementById('tocAddBtn');
+  const sizePanel = document.getElementById('fullShotControlPanelBox');
+  const coverControl = document.getElementById('coverHeightControlPanel');
+  const relToolbar = document.getElementById('relToolbarWrapperContainer');
+  const radarPanel = document.getElementById('radarChartEditorPanelBoxUi');
+  
+  const blocks = document.querySelectorAll('.wiki-editable-block');
+  const cells = document.querySelectorAll('.wiki-editable-cell');
+  const thCells = document.querySelectorAll('.wiki-editable-th-cell');
+  const ctrlWraps = document.querySelectorAll('td.row-control-btn-wrap');
+
+  if(isCharacterEditMode) {
+    btn.textContent = '저장 완료'; btn.style.background = 'var(--teal)'; btn.style.borderColor = 'var(--teal)';
+    toolbar.style.display = 'flex'; tocAddBtn.style.display = 'block';
+    if(sizePanel) sizePanel.style.display = 'flex';
+    if(coverControl) coverControl.style.display = 'flex';
+    // baseFontSize 셀렉터 복원
+    var _bfsSel = document.getElementById('toolbarBaseFontSize');
+    if(_bfsSel && currentCreator && currentFolder && currentCharacter) {
+      var _bfsChar = charaverseDatabase[currentCreator].folders.find(function(f){return f.name===currentFolder;}).characters.find(function(c){return c.name===currentCharacter;});
+      if(_bfsChar) _bfsSel.value = _bfsChar.baseFontSize || '';
+    }
+    // relToolbar는 renderCharacterDocument가 재실행될 때 새로 생성되므로 매번 다시 조회
+    const relToolbarNow = document.getElementById('relToolbarWrapperContainer');
+    if(relToolbarNow) relToolbarNow.style.display = 'flex';
+    if(radarPanel) radarPanel.style.display = 'flex';
+    
+    document.body.classList.add('edit-mode-active');
+    blocks.forEach(b => { b.setAttribute('contenteditable','true'); b.classList.add('edit-active'); });
+    cells.forEach(c => { c.setAttribute('contenteditable','true'); c.classList.add('edit-active'); });
+    thCells.forEach(th => { th.setAttribute('contenteditable','true'); th.classList.add('edit-active'); });
+    ctrlWraps.forEach(w => w.style.display = 'table-cell');
+    document.querySelectorAll('.toc-drag-handle').forEach(h => { h.style.display = 'inline'; });
+    document.querySelectorAll('.toc-link-wrapper').forEach(w => { w.setAttribute('draggable','true'); setupTocDragEvents(w); });
+    
+    charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter).sections.forEach(sec => {
+      const iconD = document.getElementById(`tocDelIcon-${sec.id}`); if(iconD) iconD.style.display = 'inline';
+      const iconE = document.getElementById(`tocEditIcon-${sec.id}`); if(iconE) iconE.style.display = 'inline';
+    });
+    document.querySelectorAll('.rel-node-drag-handle').forEach(h => h.style.display = 'flex');
+    document.querySelectorAll('.rel-node-x-btn').forEach(xb => xb.style.display = 'flex');
+    document.querySelectorAll('.spoiler-del-btn').forEach(btn => btn.style.display = 'inline-block');
+    // 편집 ON 시 기존 노드에 드래그 이벤트 재연결
+    const char2 = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+    if(char2.relationships && char2.relationships.nodes) {
+      char2.relationships.nodes.forEach(nd => {
+        const nodeEl = document.getElementById('nodeEl-' + nd.id);
+        const handleEl = document.getElementById('handle-' + nd.id);
+        if(nodeEl && handleEl) setupDragAndDropEvents(handleEl, nodeEl, nd, char2.relationships);
+      });
+    }
+  } else {
+    btn.textContent = '편집 하기'; btn.style.background = ''; btn.style.borderColor = '';
+    toolbar.style.display = 'none'; tocAddBtn.style.display = 'none';
+    if(sizePanel) sizePanel.style.display = 'none';
+    if(coverControl) coverControl.style.display = 'none';
+    if(relToolbar) relToolbar.style.display = 'none';
+    if(radarPanel) radarPanel.style.display = 'none';
+    
+    document.body.classList.remove('edit-mode-active');
+    blocks.forEach(b => { b.setAttribute('contenteditable','false'); b.classList.remove('edit-active'); });
+    cells.forEach(c => { c.setAttribute('contenteditable','false'); c.classList.remove('edit-active'); });
+    thCells.forEach(th => { th.setAttribute('contenteditable','false'); th.classList.remove('edit-active'); });
+    ctrlWraps.forEach(w => w.style.display = 'none');
+    // 본문 이미지 플로팅 툴바 닫기
+    const floatBar = document.getElementById('inlineImgFloatBar'); if(floatBar) floatBar.remove();
+    document.querySelectorAll('.toc-drag-handle').forEach(h => { h.style.display = 'none'; });
+    document.querySelectorAll('.toc-link-wrapper').forEach(w => w.setAttribute('draggable','false'));
+
+    const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+    // 관계도 노드 DOM 위치를 데이터에 먼저 동기화 (드래그 위치 보존)
+    if(char.relationships && char.relationships.nodes) {
+      char.relationships.nodes.forEach(nd => {
+        const nodeEl = document.getElementById('nodeEl-' + nd.id);
+        if(nodeEl) { nd.x = parseInt(nodeEl.style.left) || nd.x; nd.y = parseInt(nodeEl.style.top) || nd.y; }
+      });
+    }    char.sections.forEach(sec => {
+      if(sec.type === 'text') {
+        const node = document.getElementById(`editableBlock-${sec.id}`); if(node) sec.data = node.innerHTML;
+      }
+      else if(sec.type === 'table') {
+        const targetThs = document.querySelectorAll(`.wiki-editable-th-cell[data-secid="${sec.id}"]`);
+        const targetTds = document.querySelectorAll(`.wiki-editable-cell[data-secid="${sec.id}"]`);
+        let nextArray = [];
+        targetThs.forEach((th, idx) => { nextArray.push({ k: th.innerHTML, v: targetTds[idx].innerHTML }); });
+        sec.data = nextArray;
+      }
+    });
+    document.querySelectorAll('.rel-node-drag-handle').forEach(h => h.style.display = 'none');
+    document.querySelectorAll('.rel-node-x-btn').forEach(xb => xb.style.display = 'none');
+    document.querySelectorAll('.spoiler-del-btn').forEach(btn => btn.style.display = 'none');
+
+    // 먼저 저장하고, renderCharacterDocument는 관계도 캔버스를 건드리지 않도록
+    // 관계도 노드 contenteditable을 false로만 바꾸고 캔버스 재렌더는 하지 않음
+    const viewport = document.getElementById('relCanvasViewport');
+    if(viewport) {
+      viewport.querySelectorAll('.rel-node-text-label').forEach(el => el.setAttribute('contenteditable','false'));
+    }
+    saveCreatorToFirebase(currentCreator);
+    // renderCharacterDocument 호출 시 관계도 재초기화 건너뜀 (위치 보존)
+    window._skipRelInit = true;
+    renderCharacterDocument();
+  }
+}
+
+function handleHeaderIdentityClick() {
+  if(!isCharacterEditMode) return alert("[편집 하기] 활성화 시 이름 변경 가능합니다.");
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">캐릭터 프로필 수정</div>
+    <div class="modal-body-form">
+      <div class="form-group"><label class="form-label">캐릭터 고유 명칭</label><input type="text" id="editCharDocName" class="form-input" value="${char.name}"></div>
+      <div class="form-group"><label class="form-label">프로필 사진</label><input type="file" id="editCharProfilePhoto" accept="image/*" class="form-input" onchange="previewCharacterProfilePhoto(this)"><div id="editCharProfilePreview" style="margin-top:8px;width:86px;height:86px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center">${char.isAvatarImg&&char.avatar?`<img src="${char.avatar}" style="width:100%;height:100%;object-fit:cover">`:'👤'}</div></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="submitCharacterIdentityEdit()">수정 완료</button></div>`;
+  document.getElementById('globalModalOverlay').style.display = "flex";
+}
+function previewCharacterProfilePhoto(input){var f=input.files&&input.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){window._tempCharacterProfilePhoto=e.target.result;var p=document.getElementById('editCharProfilePreview');if(p)p.innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover">'};r.readAsDataURL(f)}
+function submitCharacterIdentityEdit() {
+  const nextName = document.getElementById('editCharDocName').value.trim(); if(!nextName) return;
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  char.name = nextName; if(window._tempCharacterProfilePhoto){char.avatar=window._tempCharacterProfilePhoto;char.isAvatarImg=true;} currentCharacter = nextName; window._tempCharacterProfilePhoto=null; closeGlobalModal(); renderCharacterDocument(); isCharacterEditMode = false; toggleCharacterEditMode(); saveCreatorToFirebase(currentCreator);
+}
+
+function syncAllSectionDataFromDOM() {
+  if (!currentCreator || !currentFolder || !currentCharacter) return;
+  const char = charaverseDatabase[currentCreator].folders
+    .find(f => f.name === currentFolder).characters
+    .find(c => c.name === currentCharacter);
+  if (!char) return;
+  char.sections.forEach(sec => {
+    if (sec.type === 'text') {
+      const node = document.getElementById(`editableBlock-${sec.id}`);
+      // DOM에 해당 블록이 존재할 때만 덮어씀 (새로 추가된 섹션은 기존 data 보존)
+      if (node) sec.data = node.innerHTML;
+    } else if (sec.type === 'table') {
+      const ths = document.querySelectorAll(`.wiki-editable-th-cell[data-secid="${sec.id}"]`);
+      const tds = document.querySelectorAll(`.wiki-editable-cell[data-secid="${sec.id}"]`);
+      let arr = [];
+      ths.forEach((th, idx) => { arr.push({ k: th.innerHTML, v: tds[idx] ? tds[idx].innerHTML : '' }); });
+      if (arr.length > 0) sec.data = arr;
+      // table도 DOM 없으면 보존
+    }
+  });
+}
+
+function openNewTocModalPopup() {
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">목차 세션 항목 신설</div>
+    <div class="modal-body-form">
+      <div class="form-group"><label class="form-label">목차 타이틀</label><input type="text" id="modalNewTocTitle" class="form-input" placeholder="예: 4. 상세 성격"></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="submitAddNewTocFromModal()">목차 추가 확정</button></div>`;
+  document.getElementById('globalModalOverlay').style.display = "flex";
+}
+// 렌더 후 편집모드 UI를 복원하는 헬퍼 (renderCharacterDocument 이후 항상 호출)
+function reactivateEditModeUI(scrollToId) {
+  document.body.classList.add('edit-mode-active');
+  document.querySelectorAll('.wiki-editable-block,.wiki-editable-cell,.wiki-editable-th-cell').forEach(function(el){
+    el.setAttribute('contenteditable','true'); el.classList.add('edit-active');
+  });
+  document.querySelectorAll('td.row-control-btn-wrap').forEach(function(w){ w.style.display='table-cell'; });
+  document.querySelectorAll('.toc-drag-handle').forEach(function(h){ h.style.display='inline'; });
+  document.querySelectorAll('.toc-link-wrapper').forEach(function(w){ w.setAttribute('draggable','true'); setupTocDragEvents(w); });
+  var char = charaverseDatabase[currentCreator].folders.find(function(f){return f.name===currentFolder;}).characters.find(function(c){return c.name===currentCharacter;});
+  char.sections.forEach(function(sec){
+    var iconD = document.getElementById('tocDelIcon-'+sec.id); if(iconD) iconD.style.display='inline';
+    var iconE = document.getElementById('tocEditIcon-'+sec.id); if(iconE) iconE.style.display='inline';
+  });
+  var relToolbar = document.getElementById('relToolbarWrapperContainer');
+  if(relToolbar) relToolbar.style.display='flex';
+  document.querySelectorAll('.rel-node-drag-handle').forEach(function(h){ h.style.display='flex'; });
+  document.querySelectorAll('.rel-node-x-btn').forEach(function(xb){ xb.style.display='flex'; });
+  document.querySelectorAll('.spoiler-del-btn').forEach(function(btn){ btn.style.display='inline-block'; });
+  var tocAddBtn = document.getElementById('tocAddBtn'); if(tocAddBtn) tocAddBtn.style.display='block';
+  var toolbar = document.getElementById('wikiEditorToolbar'); if(toolbar) toolbar.style.display='flex';
+  if(scrollToId) {
+    var el = document.getElementById(scrollToId);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+}
+
+function submitAddNewTocFromModal() {
+  const title = document.getElementById('modalNewTocTitle').value.trim(); if(!title) return;
+  syncAllSectionDataFromDOM();
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  const newSecId = "sec-" + Date.now();
+  char.sections.push({ id: newSecId, title: title, type: "text", data: "이곳에 설정을 기술하세요." });
+  closeGlobalModal();
+  isCharacterEditMode = true;
+  renderCharacterDocument();
+  setTimeout(function(){ reactivateEditModeUI('editableBlock-' + newSecId); }, 50);
+  saveCreatorToFirebase(currentCreator);
+}
+function openEditTocModalPopup(secId, currentTitle) {
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">목차 이름 수정</div>
+    <div class="modal-body-form">
+      <div class="form-group"><label class="form-label">목차 타이틀 수정</label><input type="text" id="modalEditTocTitle" class="form-input" value="${currentTitle}"></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="submitEditTocFromModal('${secId}')">변경 적용</button></div>`;
+  document.getElementById('globalModalOverlay').style.display = "flex";
+}
+function submitEditTocFromModal(secId) {
+  const nextTitle = document.getElementById('modalEditTocTitle').value.trim(); if(!nextTitle) return;
+  syncAllSectionDataFromDOM();
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  const sec = char.sections.find(s => s.id === secId); if(sec) sec.title = nextTitle;
+  closeGlobalModal();
+  isCharacterEditMode = true;
+  renderCharacterDocument();
+  setTimeout(reactivateEditModeUI, 50);
+  saveCreatorToFirebase(currentCreator);
+}
+function deleteCustomSection(secId) {
+  if(secId==='sec-0' || secId==='sec-1') return alert('기본 명세 축은 삭제할 수 없습니다.');
+  syncAllSectionDataFromDOM();
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  char.sections = char.sections.filter(s => s.id !== secId);
+  isCharacterEditMode = true;
+  renderCharacterDocument();
+  setTimeout(reactivateEditModeUI, 50);
+  saveCreatorToFirebase(currentCreator);
+}
+
+function insertLinkToEditor() {
+  saveSelectionCacheRange();
+  const sel = window.getSelection();
+  const selectedText = sel ? sel.toString().trim() : '';
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">🔗 링크 삽입</div>
+    <div class="modal-body-form">
+      <div class="form-group"><label class="form-label">링크 텍스트 (표시될 글자)</label><input type="text" id="modalLinkText" class="form-input" value="${selectedText.replace(/"/g,'&quot;')}" placeholder="표시될 글자"></div>
+      <div class="form-group"><label class="form-label">URL 주소</label><input type="text" id="modalLinkUrl" class="form-input" placeholder="https://..."></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="submitLinkInsert()">링크 삽입</button></div>`;
+  document.getElementById('globalModalOverlay').style.display = "flex";
+  setTimeout(() => document.getElementById('modalLinkUrl').focus(), 100);
+}
+function submitLinkInsert() {
+  const text = document.getElementById('modalLinkText').value.trim();
+  const url = document.getElementById('modalLinkUrl').value.trim();
+  if (!url) return;
+  const displayText = text || url;
+  const htmlSnippet = `<a href="${url}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:underline;cursor:pointer;" onclick="window.open('${url}','_blank')">${displayText}</a>`;
+  closeGlobalModal();
+  const sel = window.getSelection();
+  if (savedSelectionRange) {
+    sel.removeAllRanges();
+    sel.addRange(savedSelectionRange);
+    // 선택 텍스트가 있으면 대체, 없으면 커서 위치에 삽입
+    document.execCommand('insertHTML', false, htmlSnippet);
+  } else {
+    const fallback = document.querySelector('.edit-active');
+    if (fallback) fallback.innerHTML += htmlSnippet;
+  }
+}
+
+function openInlineImageInsertModal() {
+  saveSelectionCacheRange();
+  // 모달 열기 전에 커서가 있는 editableBlock의 secId를 확정 저장
+  window._inlineImgTargetSecId = null;
+  if(savedSelectionRange) {
+    var node = savedSelectionRange.startContainer;
+    while(node && node !== document.body) {
+      if(node.id && node.id.startsWith('editableBlock-')) {
+        window._inlineImgTargetSecId = node.id.replace('editableBlock-', '');
+        break;
+      }
+      node = node.parentNode;
+    }
+  }
+  // fallback: 현재 포커스된 editableBlock
+  if(!window._inlineImgTargetSecId) {
+    var active = document.querySelector('.wiki-editable-block.edit-active');
+    if(active && active.id) window._inlineImgTargetSecId = active.id.replace('editableBlock-', '');
+  }
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">📸 본문 사진 삽입</div>
+    <div class="modal-body-form">
+      <div class="form-group">
+        <label class="form-label">사진 파일 선택</label>
+        <input type="file" id="modalInlineImgFile" accept="image/*" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">정렬 / 크기</label>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:6px">
+          <div>
+            <label class="form-label" style="margin-bottom:4px">정렬</label>
+            <div style="display:flex; gap:6px">
+              <button id="iiAlignLeft"  onclick="setIIAlign('left')"   style="flex:1; padding:7px 4px; border-radius:6px; border:2px solid var(--border2); background:var(--white); cursor:pointer; font-size:15px; transition:all 0.1s" title="좌측 정렬">◀ 좌</button>
+              <button id="iiAlignCenter" onclick="setIIAlign('center')" style="flex:1; padding:7px 4px; border-radius:6px; border:2px solid var(--accent); background:var(--accent-bg); cursor:pointer; font-size:15px; transition:all 0.1s" title="가운데 정렬">■ 중</button>
+              <button id="iiAlignRight" onclick="setIIAlign('right')"  style="flex:1; padding:7px 4px; border-radius:6px; border:2px solid var(--border2); background:var(--white); cursor:pointer; font-size:15px; transition:all 0.1s" title="우측 정렬">우 ▶</button>
+            </div>
+          </div>
+          <div>
+            <label class="form-label" style="margin-bottom:4px">너비 (px)</label>
+            <input type="number" id="iiWidth" class="form-input" value="260" min="80" max="700" style="text-align:center">
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:4px">
+          <input type="range" id="iiWidthRange" min="80" max="700" value="260" style="flex:1" oninput="document.getElementById('iiWidth').value=this.value">
+          <span id="iiWidthLabel" style="font-size:12px; color:var(--muted); min-width:44px">260px</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="submitInlineImageInsert()">본문에 삽입</button></div>`;
+  document.getElementById('globalModalOverlay').style.display = "flex";
+
+  // 너비 슬라이더 ↔ 숫자 입력 양방향 동기화
+  const widthInput = document.getElementById('iiWidth');
+  const widthRange = document.getElementById('iiWidthRange');
+  const widthLabel = document.getElementById('iiWidthLabel');
+  widthInput.addEventListener('input', function() {
+    widthRange.value = this.value;
+    widthLabel.textContent = this.value + 'px';
+  });
+  widthRange.addEventListener('input', function() {
+    widthInput.value = this.value;
+    widthLabel.textContent = this.value + 'px';
+  });
+
+  window._iiAlign = 'center'; // 기본값
+}
+function setIIAlign(align) {
+  window._iiAlign = align;
+  ['left','center','right'].forEach(a => {
+    const btn = document.getElementById('iiAlign' + a.charAt(0).toUpperCase() + a.slice(1));
+    if (!btn) return;
+    if (a === align) {
+      btn.style.borderColor = 'var(--accent)';
+      btn.style.background = 'var(--accent-bg)';
+    } else {
+      btn.style.borderColor = 'var(--border2)';
+      btn.style.background = 'var(--white)';
+    }
+  });
+}
+function submitInlineImageInsert() {
+  const file = document.getElementById('modalInlineImgFile').files[0]; if(!file) return;
+  const align = window._iiAlign || 'center';
+  const width = parseInt(document.getElementById('iiWidth').value) || 260;
+  const targetSecId = window._inlineImgTargetSecId;
+  compressFile(file, 900, 900, 0.80, function(dataUrl) {
+    const uid = "iimg-" + Date.now();
+    const wrapStyle = align === 'left' ? 'display:block; text-align:left;' : align === 'right' ? 'display:block; text-align:right;' : 'display:block; text-align:center;';
+    const htmlSnippet = `<div id="wrap-${uid}" class="inline-img-wrap" style="${wrapStyle}" data-align="${align}" contenteditable="false"><img src="${dataUrl}" id="img-${uid}" style="width:${width}px; max-width:100%; border-radius:8px; margin:6px 0; cursor:pointer; display:inline-block;" onclick="openInlineImgFloatToolbar('${uid}', this)"><br><button class="inline-img-del-btn" style="font-size:11px; color:#dc2626; cursor:pointer; background:none; border:none; padding:0; margin-top:2px" onclick="document.getElementById('wrap-${uid}').remove()">[이미지 삭제]</button></div><p><br></p>`;
+    closeGlobalModal();
+
+    // DOM에 삽입
+    var inserted = false;
+    var targetBlock = targetSecId ? document.getElementById('editableBlock-' + targetSecId) : null;
+    var sel = window.getSelection();
+    if(savedSelectionRange) {
+      try {
+        var container = savedSelectionRange.startContainer;
+        if(container && document.contains(container)) {
+          sel.removeAllRanges(); sel.addRange(savedSelectionRange);
+          document.execCommand('insertHTML', false, htmlSnippet);
+          inserted = true;
+        }
+      } catch(err) {}
+    }
+    if(!inserted) {
+      var fb = targetBlock || document.querySelector('.wiki-editable-block.edit-active');
+      if(fb) { fb.innerHTML += htmlSnippet; inserted = true; targetBlock = fb; }
+    }
+
+    if(!inserted) return;
+
+    // 삽입된 블록을 직접 찾아 sec.data에 씀 (syncAllSectionDataFromDOM 대신 정확히 타겟팅)
+    setTimeout(function() {
+      var char = charaverseDatabase[currentCreator].folders.find(function(f){ return f.name === currentFolder; }).characters.find(function(c){ return c.name === currentCharacter; });
+      if(!char) return;
+      // 삽입된 블록의 secId로 정확히 찾기
+      var blockEl = targetSecId ? document.getElementById('editableBlock-' + targetSecId) : null;
+      if(!blockEl) {
+        // execCommand로 삽입된 경우 wrap 부모 블록에서 secId 찾기
+        var wrapEl = document.getElementById('wrap-' + uid);
+        if(wrapEl) {
+          var p = wrapEl.parentNode;
+          while(p && p !== document.body) {
+            if(p.id && p.id.startsWith('editableBlock-')) { blockEl = p; break; }
+            p = p.parentNode;
+          }
+        }
+      }
+      if(blockEl) {
+        var secId = blockEl.id.replace('editableBlock-', '');
+        var sec = char.sections.find(function(s){ return s.id === secId; });
+        if(sec) sec.data = blockEl.innerHTML;
+      } else {
+        // 최후 fallback: 전체 sync
+        syncAllSectionDataFromDOM();
+      }
+      saveCreatorToFirebase(currentCreator);
+    }, 80);
+  });
+}
+
+/* ── 본문 이미지 클릭 시 플로팅 정렬/크기 툴바 ── */
+function openInlineImgFloatToolbar(uid, imgEl) {
+  if(!isCharacterEditMode) return; // 편집 모드에서만 동작
+  // 기존 툴바 제거
+  const existing = document.getElementById('inlineImgFloatBar');
+  if(existing) { existing.remove(); if(existing.dataset.uid === uid) return; }
+
+  const wrap = document.getElementById('wrap-' + uid);
+  const currentAlign = wrap ? (wrap.getAttribute('data-align') || 'center') : 'center';
+  const currentWidth = imgEl.style.width ? parseInt(imgEl.style.width) : 260;
+
+  const bar = document.createElement('div');
+  bar.id = 'inlineImgFloatBar';
+  bar.dataset.uid = uid;
+  bar.style.cssText = `
+    position:fixed; z-index:9000; background:var(--white); border:1px solid var(--border2);
+    border-radius:10px; box-shadow:0 6px 24px rgba(0,0,0,0.14); padding:10px 14px;
+    display:flex; flex-direction:column; gap:10px; min-width:240px;
+    font-size:12px; color:var(--text);
+  `;
+
+  bar.innerHTML = `
+    <div style="display:flex; align-items:center; justify-content:space-between">
+      <span style="font-weight:700; font-size:13px; color:var(--accent)">🖼️ 이미지 편집</span>
+      <button onclick="document.getElementById('inlineImgFloatBar').remove()" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);line-height:1">✕</button>
+    </div>
+    <div>
+      <div style="font-size:11px; font-weight:700; color:var(--muted2); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em">정렬</div>
+      <div style="display:flex; gap:6px">
+        <button id="fbar-left-${uid}"   onclick="applyInlineImgAlign('${uid}','left')"   style="flex:1; padding:7px 0; border-radius:7px; border:2px solid ${currentAlign==='left'?'var(--accent)':'var(--border2)'}; background:${currentAlign==='left'?'var(--accent-bg)':'var(--white)'}; cursor:pointer; font-size:13px; font-weight:600">◀ 좌</button>
+        <button id="fbar-center-${uid}" onclick="applyInlineImgAlign('${uid}','center')" style="flex:1; padding:7px 0; border-radius:7px; border:2px solid ${currentAlign==='center'?'var(--accent)':'var(--border2)'}; background:${currentAlign==='center'?'var(--accent-bg)':'var(--white)'}; cursor:pointer; font-size:13px; font-weight:600">■ 중</button>
+        <button id="fbar-right-${uid}"  onclick="applyInlineImgAlign('${uid}','right')"  style="flex:1; padding:7px 0; border-radius:7px; border:2px solid ${currentAlign==='right'?'var(--accent)':'var(--border2)'}; background:${currentAlign==='right'?'var(--accent-bg)':'var(--white)'}; cursor:pointer; font-size:13px; font-weight:600">우 ▶</button>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px; font-weight:700; color:var(--muted2); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em">크기</div>
+      <div style="display:flex; align-items:center; gap:8px">
+        <input type="range" id="fbar-range-${uid}" min="80" max="700" value="${currentWidth}" style="flex:1"
+          oninput="applyInlineImgWidth('${uid}', this.value)">
+        <span id="fbar-label-${uid}" style="min-width:44px; font-weight:600; color:var(--text); text-align:right">${currentWidth}px</span>
+      </div>
+    </div>
+    <button onclick="document.getElementById('wrap-${uid}').remove(); document.getElementById('inlineImgFloatBar').remove()" style="padding:7px; border-radius:7px; border:1px solid #fca5a5; background:#fef2f2; color:#dc2626; cursor:pointer; font-size:12px; font-weight:700">🗑 이미지 삭제</button>`;
+
+  document.body.appendChild(bar);
+
+  // 이미지 위치에 맞게 툴바 포지셔닝
+  const rect = imgEl.getBoundingClientRect();
+  let top = rect.bottom + 8;
+  let left = rect.left;
+  if(left + 260 > window.innerWidth - 12) left = window.innerWidth - 272;
+  if(top + 220 > window.innerHeight - 12) top = rect.top - 230;
+  bar.style.top = top + 'px';
+  bar.style.left = left + 'px';
+
+  // 툴바 외부 클릭 시 닫기
+  setTimeout(() => {
+    function outsideClick(ev) {
+      if(!bar.contains(ev.target) && ev.target !== imgEl) {
+        bar.remove();
+        document.removeEventListener('click', outsideClick);
+      }
+    }
+    document.addEventListener('click', outsideClick);
+  }, 100);
+}
+function applyInlineImgAlign(uid, align) {
+  const wrap = document.getElementById('wrap-' + uid); if(!wrap) return;
+  wrap.setAttribute('data-align', align);
+  wrap.style.textAlign = align;
+  // 정렬 버튼 활성 스타일 갱신
+  ['left','center','right'].forEach(a => {
+    const btn = document.getElementById('fbar-' + a + '-' + uid); if(!btn) return;
+    const active = a === align;
+    btn.style.borderColor = active ? 'var(--accent)' : 'var(--border2)';
+    btn.style.background  = active ? 'var(--accent-bg)' : 'var(--white)';
+  });
+}
+function applyInlineImgWidth(uid, val) {
+  const img = document.getElementById('img-' + uid); if(!img) return;
+  img.style.width = val + 'px';
+  const lbl = document.getElementById('fbar-label-' + uid); if(lbl) lbl.textContent = val + 'px';
+}
+
+function resizeCharacterBannerCover(val) {
+  charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter).coverHeight = val;
+  document.getElementById('charDocumentCover').style.height = val + "px";
+}
+function uploadCharacterCoverImg(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader(); reader.onload = function(evt) {
+    charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter).coverImg = evt.target.result;
+    document.getElementById('charDocumentCover').style.backgroundImage = `url('${evt.target.result}')`;
+  }; reader.readAsDataURL(file);
+}
+function uploadCharacterFullShot(event) {
+  const file = event.target.files[0]; if(!file) return;
+  const reader = new FileReader(); reader.onload = function(e) {
+    charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter).image = e.target.result;
+    document.getElementById('innerFullShotBox').innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
+  }; reader.readAsDataURL(file);
+}
+function clearCharacterFullShotImg() {
+  charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter).image = "";
+  document.getElementById('innerFullShotBox').innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%; color:var(--muted2); gap:8px;"><span style="font-size:40px">🖼️</span><span style="font-size:12px; font-weight:500;">전신 일러스트 / 이미지</span><span style="font-size:11px; opacity:0.7;">편집 모드에서 사진을 업로드하세요</span></div>`;
+}
+function changeCharacterFullShotAlign(dir) {
+  charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter).imageAlign = dir;
+  document.getElementById('innerFullShotBox').style.margin = dir === 'center' ? '0 auto' : (dir === 'right' ? '0 0 0 auto' : '0');
+}
+function resizeFullShotImg(val, type) {
+  const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+  const targetBox = document.getElementById('innerFullShotBox');
+  if(type === 'w') { char.imageWidth = val; targetBox.style.width = val + "px"; document.getElementById('lblW').textContent = val + "px"; } 
+  else { char.imageHeight = val; targetBox.style.height = val + "px"; document.getElementById('lblH').textContent = val + "px"; }
+}
+
+function deleteCharacterCard(charName) {
+  if (!confirm("'" + charName + "' 캐릭터를 삭제할까요?")) return;
+  var folder = charaverseDatabase[currentCreator].folders.find(function(f){ return f.name === currentFolder; });
+  folder.characters = folder.characters.filter(function(c){ return c.name !== charName; });
+  saveToFirebase(); renderFolderContentPage();
+}
+function deleteCurrentCharacter() {
+  if(!confirm("이 문서 카드를 완전히 파쇄합니까?")) return;
+  charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.filter(c => c.name !== currentCharacter);
+  saveToFirebase(); navigate('folder', currentCreator, currentFolder);
+}
+function scrollToSection(id, element) {
+  const target = document.getElementById(id); if(target) target.scrollIntoView({ behavior: 'smooth' });
+  document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active')); element.classList.add('active');
+}
+function closeGlobalModal() { document.getElementById('globalModalOverlay').style.display = "none"; }
+
+/* ==================== 각주 팝업 툴팁 엔진 ==================== */
+(function setupFootnoteTooltip() {
+  const tip = document.createElement('div');
+  tip.id = 'footnoteTooltipPopup';
+  document.body.appendChild(tip);
+
+  document.addEventListener('mouseover', function(e) {
+    const ref = e.target.closest('.wiki-footnote-ref');
+    if(!ref) return;
+    const txt = ref.getAttribute('data-tip');
+    const num = ref.getAttribute('data-num');
+    if(!txt) return;
+    tip.innerHTML = `<span style="color:var(--accent);font-weight:bold;">[${num}]</span> ${txt}`;
+    tip.style.display = 'block';
+  });
+  document.addEventListener('mousemove', function(e) {
+    if(tip.style.display === 'block') {
+      let x = e.clientX + 14, y = e.clientY - 36;
+      if(x + 310 > window.innerWidth) x = e.clientX - 320;
+      if(y < 8) y = e.clientY + 16;
+      tip.style.left = x + 'px'; tip.style.top = y + 'px';
+    }
+  });
+  document.addEventListener('mouseout', function(e) {
+    if(e.target.closest('.wiki-footnote-ref')) tip.style.display = 'none';
+  });
+  document.addEventListener('click', function(e) {
+    const ref = e.target.closest('.wiki-footnote-ref');
+    if(!ref) return;
+    const num = ref.getAttribute('data-num');
+    const target = document.getElementById(`fn-link-${num}`);
+    if(target) { target.scrollIntoView({behavior:'smooth', block:'center'}); }
+  });
+})();
+
+/* ==================== 목차 드래그 재정렬 엔진 ==================== */
+let tocDragSrcId = null;
+
+function setupTocDragEvents(wrapper) {
+  wrapper.addEventListener('dragstart', function(e) {
+    tocDragSrcId = wrapper.getAttribute('data-secid');
+    wrapper.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  wrapper.addEventListener('dragend', function() {
+    document.querySelectorAll('.toc-link-wrapper').forEach(w => {
+      w.classList.remove('dragging'); w.classList.remove('drag-over');
+    });
+  });
+  wrapper.addEventListener('dragover', function(e) {
+    e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('.toc-link-wrapper').forEach(w => w.classList.remove('drag-over'));
+    wrapper.classList.add('drag-over');
+  });
+  wrapper.addEventListener('drop', function(e) {
+    e.preventDefault();
+    const destId = wrapper.getAttribute('data-secid');
+    if(!tocDragSrcId || tocDragSrcId === destId) return;
+    const char = charaverseDatabase[currentCreator].folders.find(f => f.name === currentFolder).characters.find(c => c.name === currentCharacter);
+    const srcIdx = char.sections.findIndex(s => s.id === tocDragSrcId);
+    const dstIdx = char.sections.findIndex(s => s.id === destId);
+    if(srcIdx < 0 || dstIdx < 0) return;
+    const [moved] = char.sections.splice(srcIdx, 1);
+    char.sections.splice(dstIdx, 0, moved);
+    saveToFirebase();
+    renderCharacterDocument();
+    isCharacterEditMode = false; toggleCharacterEditMode();
+  });
+}
+
+// ══════════════════════════════════════════
+// 📱 핸드폰 기능
+// ══════════════════════════════════════════
+var phoneState = { screen: 'home', currentRoom: null, currentPost: null, postSlide: 0, replyingTo: null };
+
+/* ── 이미지 압축 유틸리티 (Firebase 저장 최적화) ── */
+function compressImageDataUrl(dataUrl, maxW, maxH, quality, cb) {
+  var img = new Image();
+  img.onload = function() {
+    var w = img.width, h = img.height;
+    var scale = Math.min(1, maxW / w, maxH / h);
+    var cw = Math.round(w * scale), ch = Math.round(h * scale);
+    var canvas = document.createElement('canvas');
+    canvas.width = cw; canvas.height = ch;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, cw, ch);
+    cb(canvas.toDataURL('image/jpeg', Math.max(0.92, quality || 0.75)));
+  };
+  img.src = dataUrl;
+}
+function compressFile(file, maxW, maxH, quality, cb) {
+  var r = new FileReader();
+  r.onload = function(e) { compressImageDataUrl(e.target.result, maxW, maxH, quality, cb); };
+  r.readAsDataURL(file);
+}
+
+function getPhoneData() {
+  var char = charaverseDatabase[currentCreator].folders
+    .find(function(f){ return f.name === currentFolder; }).characters
+    .find(function(c){ return c.name === currentCharacter; });
+  if (!char.phone) char.phone = { bg: '', rooms: [], album: { banner: '', avatar: '', name: '', bio: '', posts: [] } };
+  if (!char.phone.rooms) char.phone.rooms = [];
+  if (!char.phone.album) char.phone.album = { banner: '', avatar: '', name: '', bio: '', posts: [] };
+  if (!char.phone.album.posts) char.phone.album.posts = [];
+  if (!char.phone.gallery) char.phone.gallery = { items: [], folders: [] };
+  if (!char.phone.gallery.items) char.phone.gallery.items = [];
+  if (!char.phone.gallery.folders) char.phone.gallery.folders = [];
+  char.phone.gallery.items.forEach(function(x){ if(typeof x==='string') { var idx=char.phone.gallery.items.indexOf(x); char.phone.gallery.items[idx]={image:x,liked:false}; } else if(x && typeof x.liked!=='boolean') x.liked=false; });
+  char.phone.gallery.folders.forEach(function(f){ if(!f.items) f.items=[]; f.items.forEach(function(x){ if(typeof x==='string') { var idx=f.items.indexOf(x); f.items[idx]={image:x,liked:false}; } else if(x && typeof x.liked!=='boolean') x.liked=false; } ); });
+  return char.phone;
+}
+
+var _phoneAutoSaveInterval = null;
+function openPhone() {
+  document.getElementById('phoneOverlay').style.display = 'flex';
+  phoneState.screen = 'home';
+  renderPhone();
+}
+function closePhone() {
+  document.getElementById('phoneOverlay').style.display = 'none';
+  if (_phoneAutoSaveInterval) { clearInterval(_phoneAutoSaveInterval); _phoneAutoSaveInterval = null; }
+}
+
+// ── 인라인 모달 (prompt/confirm 대체) ──
+function showPhoneModal(opts) {
+  // opts: { title, desc, input(bool), placeholder, confirmText, confirmClass, onConfirm, onCancel, extraBtn:{text,cls,action} }
+  var frame = document.getElementById('phoneFrame');
+  var mo = document.createElement('div');
+  mo.className = 'phone-modal-overlay';
+  mo.id = 'phoneModalOverlay';
+  var inputHtml = opts.input ? '<input class="phone-modal-input" id="phoneModalInput" placeholder="' + (opts.placeholder||'') + '">' : '';
+  var extraBtnHtml = opts.extraBtn ? '<button class="phone-modal-btn ' + (opts.extraBtn.cls||'cancel') + '" id="phoneModalExtra">' + opts.extraBtn.text + '</button>' : '';
+  mo.innerHTML = '<div class="phone-modal-sheet">' +
+    '<div class="phone-modal-title">' + opts.title + '</div>' +
+    (opts.desc ? '<div class="phone-modal-desc">' + opts.desc + '</div>' : '') +
+    inputHtml +
+    '<button class="phone-modal-btn ' + (opts.confirmClass||'confirm') + '" id="phoneModalConfirm">' + (opts.confirmText||'확인') + '</button>' +
+    extraBtnHtml +
+    '<button class="phone-modal-btn cancel" id="phoneModalCancel">취소</button>' +
+  '</div>';
+  frame.appendChild(mo);
+  if (opts.input) document.getElementById('phoneModalInput').focus();
+  document.getElementById('phoneModalConfirm').onclick = function() {
+    var val = opts.input ? document.getElementById('phoneModalInput').value : null;
+    mo.remove();
+    if (opts.onConfirm) opts.onConfirm(val);
+  };
+  document.getElementById('phoneModalCancel').onclick = function() {
+    mo.remove();
+    if (opts.onCancel) opts.onCancel();
+  };
+  if (opts.extraBtn) {
+    document.getElementById('phoneModalExtra').onclick = function() {
+      mo.remove();
+      if (opts.extraBtn.action) opts.extraBtn.action();
+    };
+  }
+}
+
+function fileToDataUrl(file, cb) {
+  var reader = new FileReader();
+  reader.onload = function(e) { cb(e.target.result); };
+  reader.readAsDataURL(file);
+}
+
+function renderPhone() {
+  var scr = document.getElementById('phoneScreen');
+  var pd = getPhoneData();
+  if (phoneState.screen === 'home') {
+    var now = new Date();
+    var hm = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    var days = ['일','월','화','수','목','금','토'];
+    var dateStr = (now.getMonth()+1) + '월 ' + now.getDate() + '일 ' + days[now.getDay()] + '요일';
+    var bgStyle = pd.bg ? 'background-image:url(\'' + pd.bg + '\');background-size:cover;background-position:center;' : 'background:linear-gradient(160deg,#1a1a2e,#16213e,#0f3460);';
+    scr.innerHTML = '<div class="phone-home" style="' + bgStyle + 'position:relative;flex:1;display:flex;flex-direction:column">' +
+      '<div class="phone-home-overlay"></div>' +
+      '<div class="phone-status-bar"><span>' + hm + '</span><span>📶 🔋</span></div>' +
+      '<div class="phone-home-time"><div class="ph-time">' + hm + '</div><div class="ph-date">' + dateStr + '</div></div>' +
+      '<div class="phone-apps">' +
+        '<div class="phone-app-icon phone-app-msg" onclick="phoneState.screen=\'msgList\';renderPhone()"><div class="icon-wrap">💬</div><div class="icon-label">메시지</div></div>' +
+        '<div class="phone-app-icon phone-app-album" onclick="phoneState.screen=\'album\';renderPhone()"><div class="icon-wrap">📸</div><div class="icon-label">인스타</div></div>' +
+        '<div class="phone-app-icon phone-app-gallery" onclick="phoneState.screen=\'gallery\';renderPhone()"><div class="icon-wrap">🖼️</div><div class="icon-label">사진</div></div>' +
+      '</div>' +
+      '<div class="phone-home-edit">' +
+        '<label style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:7px 18px;border-radius:20px;font-size:12px;cursor:pointer;backdrop-filter:blur(4px)">🖼️ 배경화면 변경<input type="file" accept="image/*" style="display:none" onchange="(function(e){if(!e.target.files[0])return;compressFile(e.target.files[0],800,1400,0.80,function(d){getPhoneData().bg=d;saveToFirebase();renderPhone();});})(event)"></label>' +
+      '</div>' +
+    '</div>';
+  } else if (phoneState.screen === 'msgList') {
+    renderMsgList();
+  } else if (phoneState.screen === 'chat') {
+    renderChatRoom();
+  } else if (phoneState.screen === 'chatSettings') {
+    renderChatSettings();
+  } else if (phoneState.screen === 'album') {
+    renderAlbum();
+  } else if (phoneState.screen === 'albumEdit') {
+    renderAlbumEdit();
+  } else if (phoneState.screen === 'post') {
+    renderPostDetail();
+  } else if (phoneState.screen === 'newPost') {
+    renderNewPost();
+  } else if (phoneState.screen === 'gallery') {
+    renderGallery();
+  } else if (phoneState.screen === 'galleryFolder') {
+    var gf=galleryFindFolder(phoneState.galleryFolderId);
+    if(gf) renderGalleryFolder(gf); else { phoneState.screen='gallery'; phoneState.galleryView='collections'; renderGallery(); }
+  }
+}
+
+function renderMsgList() {
+  var scr = document.getElementById('phoneScreen');
+  var pd = getPhoneData();
+  var rooms = pd.rooms || [];
+  var roomsHtml = '';
+  if (rooms.length === 0) {
+    roomsHtml = '<div style="text-align:center;padding:50px 20px;color:#999;font-size:13px">채팅방이 없어요<br><br>+ 새 채팅방 버튼으로 추가해보세요</div>';
+  }
+  rooms.forEach(function(r, i) {
+    var last = r.messages && r.messages.length > 0 ? r.messages[r.messages.length-1].text : '메시지 없음';
+    if (last && last.startsWith('data:image')) last = '📷 이미지';
+    var avatarHtml = r.avatar ? '<img src="'+r.avatar+'">' : (r.emoji || '💬');
+    roomsHtml += '<div class="msg-room-item">' +
+      '<div style="display:flex;align-items:center;gap:12px;flex:1" onclick="phoneState.currentRoom='+i+';phoneState.screen=\'chat\';renderPhone()">' +
+        '<div class="msg-room-avatar">' + avatarHtml + '</div>' +
+        '<div class="msg-room-info"><div class="msg-room-name">' + (r.name||'채팅방') + '</div><div class="msg-room-preview">' + last + '</div></div>' +
+      '</div>' +
+      '<div onclick="deleteRoom('+i+')" style="color:#ccc;font-size:18px;padding:4px 8px;cursor:pointer;flex-shrink:0" onmouseover="this.style.color=\'#ef4444\'" onmouseout="this.style.color=\'#ccc\'">🗑</div>' +
+    '</div>';
+  });
+  scr.innerHTML = '<div class="msg-app">' +
+    '<div class="msg-header">' +
+      '<button class="msg-back-btn" onclick="phoneState.screen=\'home\';renderPhone()">←</button>' +
+      '<span class="msg-header-title">메시지</span>' +
+      '<button class="msg-add-btn" onclick="addChatRoom()">+ 새 채팅방</button>' +
+    '</div>' +
+    '<div class="msg-room-list">' + roomsHtml + '</div>' +
+  '</div>';
+}
+
+function renderChatRoom() {
+  var scr = document.getElementById('phoneScreen');
+  var pd = getPhoneData();
+  var room = pd.rooms[phoneState.currentRoom];
+  if (!room) { phoneState.screen = 'msgList'; renderPhone(); return; }
+  var msgs = room.messages || [];
+  var theme = room.theme || { myColor: 'var(--accent)', bgColor: '#e8e8e8', sendBtnColor: 'var(--accent)' };
+  var participants = room.participants || ['나', '상대방'];
+  var avatarHtml = room.avatar ? '<img src="'+room.avatar+'">' : (room.emoji || '💬');
+
+  var msgsHtml = '';
+  msgs.forEach(function(m, mi) {
+    // 날짜 구분선 마커
+    if (m._dateDivider) {
+      msgsHtml += '<div class="chat-date-divider" onclick="editDateDivider('+mi+')">' + (m.date||'') + '</div>';
+      return;
+    }
+    var isMine = m.sender === participants[0];
+    var senderAv = !isMine ? ('<div class="chat-msg-avatar">' + avatarHtml + '</div>') : '';
+    var bubbleStyle = 'background:' + (isMine ? (theme.myColor||'var(--accent)') : 'rgba(255,255,255,0.95)') + ';';
+    if (!isMine && m.color) bubbleStyle += 'color:' + m.color + ';';
+    if (m.fontFamily) bubbleStyle += 'font-family:' + m.fontFamily + ';';
+    var senderName = (!isMine && participants.length > 2) ? '<div class="chat-name-sender">' + m.sender + '</div>' : '';
+    // 이미지 vs 텍스트
+    var bubbleContent = m.image ? '<img src="'+m.image+'" style="max-width:160px;border-radius:10px">' : m.text;
+    var metaHtml = '<div class="chat-msg-meta">' +
+      '<span class="chat-msg-del" onclick="deleteMsg('+mi+')">✕</span>' +
+      '<span class="chat-msg-time">' + (m.time||'') + '</span>' +
+    '</div>';
+    msgsHtml += '<div class="chat-msg-row ' + (isMine?'mine':'theirs') + '">' +
+      (!isMine ? senderAv : '') +
+      '<div style="display:flex;flex-direction:column;">' + senderName +
+        '<div style="display:flex;align-items:flex-end;gap:4px;' + (isMine?'flex-direction:row-reverse':'') + '">' +
+          '<div class="chat-msg-bubble" style="' + bubbleStyle + (isMine?'color:#fff':'') + '">' + bubbleContent + '</div>' +
+          metaHtml +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  });
+
+  var participantOpts = participants.map(function(p,i){ return '<option value="'+p+'"'+(i===0?' selected':'')+'>'+p+'</option>'; }).join('');
+
+  scr.innerHTML = '<div class="chat-room" style="background:' + (theme.bgColor||'#e8e8e8') + '">' +
+    '<div class="chat-header" style="background:' + (theme.myColor||'var(--accent)') + '">' +
+      '<button class="msg-back-btn" style="color:#fff" onclick="phoneState.screen=\'msgList\';renderPhone()">←</button>' +
+      '<div class="chat-header-avatar">' + avatarHtml + '</div>' +
+      '<span class="chat-header-name">' + (room.name||'채팅방') + '</span>' +
+      '<button style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer" onclick="phoneState.screen=\'chatSettings\';renderPhone()">⚙️</button>' +
+    '</div>' +
+    '<div class="chat-messages" id="chatMsgs">' + msgsHtml + '</div>' +
+    '<div class="chat-input-area">' +
+      '<div class="chat-toolbar">' +
+        '<select id="msgSender">' + participantOpts + '</select>' +
+        '<select id="msgFont">' +
+          '<option value="">기본</option>' +
+          '<option value="Noto Sans KR">Noto Sans</option>' +
+          '<option value="Gowun Batang">고운바탕</option>' +
+          '<option value="Nanum Gothic">나눔고딕</option>' +
+          '<option value="Noto Serif KR">Noto Serif</option>' +
+        '</select>' +
+        '<input type="color" id="msgColor" value="#000000" title="글자색" style="width:26px;height:24px;border:1px solid #ddd;border-radius:6px;cursor:pointer;padding:1px 2px" oninput="document.getElementById(\'msgColorHex\').value=this.value">' +
+        '<input type="text" id="msgColorHex" value="#000000" maxlength="7" placeholder="#000000" style="width:62px;padding:2px 5px;border:1px solid #ddd;border-radius:6px;font-size:11px;color:#333" oninput="var v=this.value;if(/^#[0-9a-fA-F]{6}$/.test(v)){document.getElementById(\'msgColor\').value=v;}">' +
+        '<label class="img-upload-label">📷<input type="file" accept="image/*" style="display:none" onchange="sendImageMsg(event)"></label>' +
+        '<button style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#555;cursor:pointer" onclick="addDateDivider()" title="날짜 구분선">📅</button>' +
+      '</div>' +
+      '<div class="chat-input-row">' +
+        '<textarea class="chat-input-box" id="chatInput" placeholder="메시지 입력..." rows="1" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>' +
+        '<button class="chat-send-btn" style="background:' + (theme.sendBtnColor||theme.myColor||'var(--accent)') + '" onclick="sendMsg()">➤</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+  setTimeout(function(){ var el=document.getElementById('chatMsgs'); if(el) el.scrollTop=el.scrollHeight; }, 50);
+}
+
+function renderChatSettings() {
+  var scr = document.getElementById('phoneScreen');
+  var pd = getPhoneData();
+  var room = pd.rooms[phoneState.currentRoom];
+  var theme = room.theme || { myColor: 'var(--accent)', bgColor: '#e8e8e8', sendBtnColor: 'var(--accent)' };
+  var participants = (room.participants || ['나', '상대방']).join('\n');
+  var avatarPreview = room.avatar ? '<img src="'+room.avatar+'" class="settings-img-preview" id="sRoomAvatarPreview">' : '<img style="display:none" class="settings-img-preview" id="sRoomAvatarPreview">';
+  scr.innerHTML = '<div class="msg-app">' +
+    '<div class="msg-header"><button class="msg-back-btn" onclick="phoneState.screen=\'chat\';renderPhone()">←</button><span class="msg-header-title">채팅방 설정</span></div>' +
+    '<div class="chat-settings-wrap">' +
+      '<div class="chat-settings-section">' +
+        '<div class="chat-settings-section-title">기본 정보</div>' +
+        '<div class="settings-row"><label>채팅방 이름</label><input id="sRoomName" value="'+(room.name||'')+'"></div>' +
+        '<div class="settings-row"><label>프로필 이모지</label><input id="sRoomEmoji" value="'+(room.emoji||'💬')+'"></div>' +
+        '<div class="settings-row"><label>프로필 이미지</label>' +
+          '<label class="settings-file-label">📷 파일 선택<input type="file" accept="image/*" style="display:none" onchange="(function(e){if(!e.target.files[0])return;compressFile(e.target.files[0],200,200,0.82,function(d){var p=document.getElementById(\'sRoomAvatarPreview\');p.src=d;p.style.display=\'block\';window._tmpRoomAvatar=d;})})(event)"></label>' +
+          avatarPreview +
+        '</div>' +
+      '</div>' +
+      '<div class="chat-settings-section">' +
+        '<div class="chat-settings-section-title">참여자</div>' +
+        '<div class="settings-row"><label>참여자 (한 줄에 한 명 / 첫 번째가 "나")</label><textarea id="sParticipants" rows="3">'+participants+'</textarea></div>' +
+      '</div>' +
+      '<div class="chat-settings-section">' +
+        '<div class="chat-settings-section-title">색상</div>' +
+        '<div class="settings-row"><label>내 말풍선 색</label><div style="display:flex;align-items:center;gap:8px"><input type="color" id="sMyColor" value="'+(theme.myColor||'var(--accent)')+'" style="width:40px;height:36px;border:1px solid #ddd;border-radius:8px;padding:2px;cursor:pointer" oninput="document.getElementById(\'sMyColorHex\').value=this.value"><input type="text" id="sMyColorHex" value="'+(theme.myColor||'var(--accent)')+'" maxlength="7" style="flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px" placeholder="var(--accent)" oninput="var v=this.value;if(/^#[0-9a-fA-F]{6}$/.test(v)){document.getElementById(\'sMyColor\').value=v;}"></div></div>' +
+        '<div class="settings-row"><label>배경 색</label><div style="display:flex;align-items:center;gap:8px"><input type="color" id="sBgColor" value="'+(theme.bgColor||'#e8e8e8')+'" style="width:40px;height:36px;border:1px solid #ddd;border-radius:8px;padding:2px;cursor:pointer" oninput="document.getElementById(\'sBgColorHex\').value=this.value"><input type="text" id="sBgColorHex" value="'+(theme.bgColor||'#e8e8e8')+'" maxlength="7" style="flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px" placeholder="#e8e8e8" oninput="var v=this.value;if(/^#[0-9a-fA-F]{6}$/.test(v)){document.getElementById(\'sBgColor\').value=v;}"></div></div>' +
+        '<div class="settings-row"><label>전송 버튼 색</label><div style="display:flex;align-items:center;gap:8px"><input type="color" id="sSendColor" value="'+(theme.sendBtnColor||'var(--accent)')+'" style="width:40px;height:36px;border:1px solid #ddd;border-radius:8px;padding:2px;cursor:pointer" oninput="document.getElementById(\'sSendColorHex\').value=this.value"><input type="text" id="sSendColorHex" value="'+(theme.sendBtnColor||'var(--accent)')+'" maxlength="7" style="flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px" placeholder="var(--accent)" oninput="var v=this.value;if(/^#[0-9a-fA-F]{6}$/.test(v)){document.getElementById(\'sSendColor\').value=v;}"></div></div>' +
+      '</div>' +
+      '<button class="settings-save-btn" onclick="saveChatSettings()">저장</button>' +
+    '</div>' +
+  '</div>';
+}
+
+// ── 앨범 ──
+function renderAlbum() {
+  var scr = document.getElementById('phoneScreen');
+  var pd = getPhoneData();
+  var al = pd.album;
+  var bannerStyle = al.banner 
+    ? 'background-image:url(\'' + al.banner + '\');background-size:cover;background-position:center;'
+    : 'background:linear-gradient(135deg,#667eea,#764ba2);';
+  var avatarHtml = al.avatar ? '<img src="'+al.avatar+'">' : '🖼️';
+  var postsHtml = '';
+  (al.posts || []).forEach(function(p, i) {
+    var thumb = p.images && p.images[0] ? '<img src="'+p.images[0]+'">' : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:22px">📷</div>';
+    postsHtml += '<div class="album-grid-cell" onclick="phoneState.currentPost='+i+';phoneState.postSlide=0;phoneState.screen=\'post\';renderPhone()">' + thumb + '</div>';
+  });
+  scr.innerHTML = '<div class="album-app">' +
+    '<div class="msg-header">' +
+      '<button class="msg-back-btn" onclick="phoneState.screen=\'home\';renderPhone()">←</button>' +
+      '<span class="msg-header-title">인스타</span>' +
+    '</div>' +
+    '<div class="album-profile-banner" style="'+bannerStyle+'">' +
+    '</div>' +
+    '<div class="album-profile-row">' +
+      '<div class="album-avatar">' + avatarHtml + '</div>' +
+      '<div class="album-profile-info">' +
+        '<div class="album-profile-name">' + (al.name || '이름 없음') + '</div>' +
+        '<div class="album-profile-bio">' + (al.bio || '소개글을 입력해보세요').replace(/\n/g,'<br>') + '</div>' +
+      '</div>' +
+      '<button class="album-edit-btn" onclick="phoneState.screen=\'albumEdit\';renderPhone()" title="편집">✏️</button>' +
+    '</div>' +
+    '<div class="album-grid-wrap">' +
+      '<div class="album-grid">' + postsHtml + '</div>' +
+      '<button class="album-add-post-btn" onclick="phoneState.screen=\'newPost\';renderPhone()">＋</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderAlbumEdit() {
+  var scr = document.getElementById('phoneScreen');
+  var pd = getPhoneData();
+  var al = pd.album;
+  var bannerPreview = al.banner ? '<img src="'+al.banner+'" class="settings-img-preview" id="alBannerPreview">' : '<img style="display:none" class="settings-img-preview" id="alBannerPreview">';
+  var avatarPreview = al.avatar ? '<img src="'+al.avatar+'" class="settings-img-preview" id="alAvatarPreview">' : '<img style="display:none" class="settings-img-preview" id="alAvatarPreview">';
+  var bioVal = (al.bio||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  scr.innerHTML = '<div class="msg-app">' +
+    '<div class="msg-header"><button class="msg-back-btn" onclick="phoneState.screen=\'album\';renderPhone()">←</button><span class="msg-header-title">인스타 편집</span></div>' +
+    '<div class="chat-settings-wrap">' +
+      '<div class="chat-settings-section">' +
+        '<div class="chat-settings-section-title">프로필</div>' +
+        '<div class="settings-row"><label>이름 (아이디)</label><input id="alName" value="'+(al.name||'')+'"></div>' +
+        '<div class="settings-row"><label>소개글 (엔터로 줄바꿈)</label><textarea id="alBio" rows="3" style="width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff;color:#1a1916;font-family:inherit;resize:none">'+bioVal+'</textarea></div>' +
+        '<div class="settings-row"><label>프로필 사진</label>' +
+          '<label class="settings-file-label">📷 파일 선택<input type="file" accept="image/*" style="display:none" onchange="(function(e){if(!e.target.files[0])return;compressFile(e.target.files[0],300,300,0.82,function(d){var p=document.getElementById(\'alAvatarPreview\');p.src=d;p.style.display=\'block\';window._tmpAlAvatar=d;})})(event)"></label>' +
+          avatarPreview +
+        '</div>' +
+        '<div class="settings-row"><label>배너 이미지</label>' +
+          '<label class="settings-file-label">📷 파일 선택<input type="file" accept="image/*" style="display:none" onchange="(function(e){if(!e.target.files[0])return;compressFile(e.target.files[0],900,400,0.80,function(d){var p=document.getElementById(\'alBannerPreview\');p.src=d;p.style.display=\'block\';window._tmpAlBanner=d;})})(event)"></label>' +
+          bannerPreview +
+        '</div>' +
+      '</div>' +
+      '<button class="settings-save-btn" onclick="saveAlbumProfile()">저장</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function saveAlbumProfile() {
+  var pd = getPhoneData();
+  pd.album.name = document.getElementById('alName').value;
+  var bioEl = document.getElementById('alBio');
+  pd.album.bio = bioEl ? bioEl.value : '';
+  if (window._tmpAlAvatar) { pd.album.avatar = window._tmpAlAvatar; window._tmpAlAvatar = null; }
+  if (window._tmpAlBanner) { pd.album.banner = window._tmpAlBanner; window._tmpAlBanner = null; }
+  saveToFirebase(); phoneState.screen = 'album'; renderPhone();
+}
+
+function renderNewPost() {
+  var scr = document.getElementById('phoneScreen');
+  window._newPostImages = window._newPostImages || [];
+  var thumbs = window._newPostImages.map(function(src,i){
+    return '<div style="position:relative;display:inline-block;margin:2px"><img src="'+src+'" style="width:60px;height:60px;object-fit:cover;border-radius:6px"><span onclick="window._newPostImages.splice('+i+',1);renderNewPost()" style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer">✕</span></div>';
+  }).join('');
+  scr.innerHTML = '<div class="msg-app">' +
+    '<div class="msg-header"><button class="msg-back-btn" onclick="window._newPostImages=[];phoneState.screen=\'album\';renderPhone()">←</button><span class="msg-header-title">새 게시물</span></div>' +
+    '<div class="chat-settings-wrap">' +
+      '<div class="chat-settings-section">' +
+        '<div class="chat-settings-section-title">이미지</div>' +
+        '<label class="settings-file-label">📷 이미지 추가 (여러 장 가능)<input type="file" accept="image/*" multiple style="display:none" onchange="addNewPostImages(event)"></label>' +
+        '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">' + thumbs + '</div>' +
+      '</div>' +
+      '<div class="chat-settings-section">' +
+        '<div class="chat-settings-section-title">내용</div>' +
+        '<div class="settings-row"><label>게시물 설명</label><textarea id="newPostDesc" rows="3" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;resize:none" placeholder="게시물 설명을 입력하세요..."></textarea></div>' +
+      '</div>' +
+      '<button class="settings-save-btn" onclick="submitNewPost()">게시하기</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function addNewPostImages(e) {
+  window._newPostImages = window._newPostImages || [];
+  var files = Array.from(e.target.files);
+  var remaining = files.length;
+  files.forEach(function(f) {
+    compressFile(f, 800, 800, 0.78, function(dataUrl) {
+      window._newPostImages.push(dataUrl);
+      remaining--;
+      if (remaining === 0) renderNewPost();
+    });
+  });
+}
+
+function submitNewPost() {
+  var desc = document.getElementById('newPostDesc').value;
+  var pd = getPhoneData();
+  pd.album.posts.unshift({ images: window._newPostImages || [], desc: desc, likes: 0, retweets: 0, liked: false, retweeted: false, comments: [] });
+  window._newPostImages = [];
+  saveToFirebase(); phoneState.screen = 'album'; renderPhone();
+}
+
+function renderPostDetail() {
+  var scr = document.getElementById('phoneScreen');
+  var pd = getPhoneData();
+  var post = pd.album.posts[phoneState.currentPost];
+  if (!post) { phoneState.screen = 'album'; renderPhone(); return; }
+  var images = post.images || [];
+  var slide = phoneState.postSlide || 0;
+  var slidesHtml = images.map(function(src){ return '<img class="post-slide-img" src="'+src+'">'; }).join('');
+  var dotsHtml = images.length > 1 ? images.map(function(_,i){ return '<div class="post-slide-dot'+(i===slide?' active':'')+'" onclick="phoneState.postSlide='+i+';document.getElementById(\'postSlidesInner\').style.transform=\'translateX(-'+i+'00%)\'"></div>'; }).join('') : '';
+  var arrowsHtml = '';
+  if (images.length > 1) {
+    arrowsHtml = (slide > 0 ? '<button class="post-slide-arrow left" onclick="phoneState.postSlide--;renderPostDetail()">‹</button>' : '') +
+      (slide < images.length-1 ? '<button class="post-slide-arrow right" onclick="phoneState.postSlide++;renderPostDetail()">›</button>' : '');
+  }
+  var al = pd.album;
+  var postAvatarHtml = al.avatar ? '<img src="'+al.avatar+'" style="width:100%;height:100%;object-fit:cover;">' : '🖼️';
+  var postUsername = al.name || '이름 없음';
+  // 댓글
+  var commentsHtml = (post.comments || []).map(function(c, ci) {
+    var repliesHtml = (c.replies || []).map(function(rep, ri) {
+      return '<div class="post-reply"><span class="post-comment-author">'+rep.author+'</span>'+rep.text+'<span class="post-comment-del" onclick="deleteReply('+ci+','+ri+')">✕</span></div>';
+    }).join('');
+    return '<div class="post-comment">' +
+      '<span class="post-comment-author">'+c.author+'</span>'+c.text+
+      '<span class="post-comment-reply-btn" onclick="phoneState.replyingTo='+ci+';renderPostDetail()">답글</span>' +
+      '<span class="post-comment-del" onclick="deletePostComment('+ci+')">✕</span>' +
+      repliesHtml +
+    '</div>';
+  }).join('');
+  var replyingLabel = phoneState.replyingTo !== null ? '답글 입력 중 ('+((post.comments[phoneState.replyingTo]||{}).author||'?')+') <span onclick="phoneState.replyingTo=null;renderPostDetail()" style="cursor:pointer;color:#ef4444">✕</span>' : '';
+  scr.innerHTML = '<div class="post-detail">' +
+    '<div class="msg-header"><button class="msg-back-btn" onclick="phoneState.screen=\'album\';renderPhone()">←</button><span class="msg-header-title">게시물</span>' +
+      '<span onclick="deletePost()" style="font-size:12px;color:#ef4444;cursor:pointer;padding:4px 8px">삭제</span>' +
+    '</div>' +
+    // 인스타 스타일 아이디 헤더
+    '<div style="display:flex;align-items:center;gap:9px;padding:10px 14px 8px;border-bottom:1px solid #f0f0f0;">' +
+      '<div style="width:36px;height:36px;border-radius:50%;background:#e8e8e8;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">'+postAvatarHtml+'</div>' +
+      '<div style="font-size:13px;font-weight:700;color:#1a1916;flex:1;">'+postUsername+'</div>' +
+    '</div>' +
+    (images.length > 0 ?
+      '<div class="post-slides"><div class="post-slides-inner" id="postSlidesInner" style="transform:translateX(-'+slide+'00%)">' + slidesHtml + '</div>' +
+      arrowsHtml + '<div class="post-slide-dots">'+dotsHtml+'</div></div>' : '') +
+    '<div class="post-body">' +
+      '<div class="post-actions">' +
+        '<button class="post-action-btn" onclick="togglePostLike()">'+(post.liked?'❤️':'🤍')+'</button>' +
+        '<span class="post-action-count" onclick="editPostLikes()" style="cursor:pointer;text-decoration:underline dotted #aaa;" title="숫자 클릭해서 수정">'+(post.likes||0)+'</span>' +
+        '<button class="post-action-btn" onclick="togglePostRetweet()">'+(post.retweeted?'🔁':'🔄')+'</button>' +
+        '<span class="post-action-count" onclick="editPostRetweets()" style="cursor:pointer;text-decoration:underline dotted #aaa;" title="숫자 클릭해서 수정">'+(post.retweets||0)+'</span>' +
+        '<button class="post-action-btn">💬</button>' +
+        '<span class="post-action-count">'+(post.comments?post.comments.length:0)+'</span>' +
+      '</div>' +
+      '<div class="post-desc">' + (post.desc||'') + '</div>' +
+      '<div class="post-comments">' + commentsHtml + '</div>' +
+      (replyingLabel ? '<div style="font-size:11px;color:#888;margin-bottom:4px">'+replyingLabel+'</div>' : '') +
+      // 댓글 입력창 - 버튼 아래로
+      '<div class="post-comment-input-area">' +
+        '<div style="display:flex;gap:8px;align-items:center;">' +
+          '<input class="post-comment-input" id="postCommentAuthor" placeholder="이름" style="width:70px;flex-shrink:0;">' +
+          '<input class="post-comment-input" id="postCommentText" placeholder="댓글 추가..." style="flex:1;">' +
+        '</div>' +
+        '<button class="post-comment-submit-full" onclick="addPostComment()">게시</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function editPostLikes() {
+  var pd = getPhoneData();
+  var post = pd.album.posts[phoneState.currentPost];
+  showPhoneModal({ title: '좋아요 수 설정', input: true, placeholder: String(post.likes||0), confirmText: '저장',
+    onConfirm: function(val) {
+      var n = parseInt(val); if (isNaN(n) || n < 0) return;
+      post.likes = n; saveToFirebase(); renderPostDetail();
+    }
+  });
+}
+function editPostRetweets() {
+  var pd = getPhoneData();
+  var post = pd.album.posts[phoneState.currentPost];
+  showPhoneModal({ title: '리트윗 수 설정', input: true, placeholder: String(post.retweets||0), confirmText: '저장',
+    onConfirm: function(val) {
+      var n = parseInt(val); if (isNaN(n) || n < 0) return;
+      post.retweets = n; saveToFirebase(); renderPostDetail();
+    }
+  });
+}
+function togglePostLike() {
+  var pd = getPhoneData();
+  var post = pd.album.posts[phoneState.currentPost];
+  post.liked = !post.liked;
+  post.likes = (post.likes||0) + (post.liked ? 1 : -1);
+  if (post.likes < 0) post.likes = 0;
+  saveToFirebase(); renderPostDetail();
+}
+function togglePostRetweet() {
+  var pd = getPhoneData();
+  var post = pd.album.posts[phoneState.currentPost];
+  post.retweeted = !post.retweeted;
+  post.retweets = (post.retweets||0) + (post.retweeted ? 1 : -1);
+  if (post.retweets < 0) post.retweets = 0;
+  saveToFirebase(); renderPostDetail();
+}
+function addPostComment() {
+  var author = document.getElementById('postCommentAuthor').value.trim() || '익명';
+  var text = document.getElementById('postCommentText').value.trim();
+  if (!text) return;
+  var pd = getPhoneData();
+  var post = pd.album.posts[phoneState.currentPost];
+  if (!post.comments) post.comments = [];
+  if (phoneState.replyingTo !== null && post.comments[phoneState.replyingTo]) {
+    if (!post.comments[phoneState.replyingTo].replies) post.comments[phoneState.replyingTo].replies = [];
+    post.comments[phoneState.replyingTo].replies.push({ author: author, text: text });
+    phoneState.replyingTo = null;
+  } else {
+    post.comments.push({ author: author, text: text, replies: [] });
+  }
+  saveToFirebase(); renderPostDetail();
+}
+function deletePostComment(ci) {
+  var pd = getPhoneData();
+  pd.album.posts[phoneState.currentPost].comments.splice(ci, 1);
+  saveToFirebase(); renderPostDetail();
+}
+function deleteReply(ci, ri) {
+  var pd = getPhoneData();
+  pd.album.posts[phoneState.currentPost].comments[ci].replies.splice(ri, 1);
+  saveToFirebase(); renderPostDetail();
+}
+function deletePost() {
+  showPhoneModal({ title: '게시물 삭제', desc: '이 게시물을 삭제할까요?', confirmText: '삭제', confirmClass: 'danger',
+    onConfirm: function() {
+      var pd = getPhoneData();
+      pd.album.posts.splice(phoneState.currentPost, 1);
+      saveToFirebase(); phoneState.screen = 'album'; renderPhone();
+    }
+  });
+}
+
+
+function galleryEscape(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function galleryArg(v){return "'"+String(v==null?'':v).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r/g,'\\r').replace(/\n/g,'\\n')+"'"}
+
+function readImageOriginal(file, cb){
+  if(!file){cb('');return;}
+  var r=new FileReader();
+  r.onload=function(e){cb(e.target.result)};
+  r.onerror=function(){alert('이미지를 읽는 중 오류가 발생했어요.');cb('')};
+  r.readAsDataURL(file);
+}
+function galleryData(){
+  var g=getPhoneData().gallery||{items:[],folders:[]};
+  if(!g.items)g.items=[];
+  if(!g.folders)g.folders=[];
+  return g;
+}
+function galleryNormalizeItem(x){
+  if(typeof x==='string')return {image:x,liked:false,createdAt:Date.now()};
+  if(!x)return {image:'',liked:false,createdAt:Date.now()};
+  if(typeof x.liked!=='boolean')x.liked=false;
+  if(!x.createdAt)x.createdAt=Date.now();
+  return x;
+}
+function galleryNormalizeAll(){
+  var g=galleryData();
+  g.items=g.items.map(galleryNormalizeItem).filter(function(x){return x.image});
+  g.folders.forEach(function(f){if(!f.items)f.items=[];f.items=f.items.map(galleryNormalizeItem).filter(function(x){return x.image})});
+  return g;
+}
+function galleryBack(){
+  // 갤러리 안에서는 한 단계씩 뒤로
+  // 앨범 목록/즐겨찾기 -> 사진, 사진 -> 핸드폰 배경화면(홈)
+  if(phoneState.screen==='galleryViewer'){
+    var v=window._galleryViewerOpen;
+    window._galleryViewerOpen=null; window._galleryZoom=1; window._galleryPanX=0; window._galleryPanY=0;
+    if(v&&v.folderId) galleryFolder(v.folderId); else galleryNav('photos');
+    return;
+  }
+  if(phoneState.screen==='galleryFolder') { galleryNav('collections'); return; }
+  if(phoneState.screen==='gallery'){
+    if(phoneState.galleryView==='collections' || phoneState.galleryView==='favorites'){
+      galleryNav('photos');
+      return;
+    }
+    phoneState.screen='home';
+    phoneState.galleryView='photos';
+    phoneState.galleryFolderId=null;
+    renderPhone();
+    return;
+  }
+  phoneState.screen='home'; phoneState.galleryView='photos'; phoneState.galleryFolderId=null; renderPhone();
+}
+function galleryNav(view){phoneState.galleryView=view;phoneState.galleryFolderId=null;phoneState.screen='gallery';renderPhone()}
+function galleryFolder(id){phoneState.galleryView='folder';phoneState.galleryFolderId=id;phoneState.screen='galleryFolder';renderPhone()}
+function galleryFindFolder(id){return galleryData().folders.find(function(f){return f.id===id})}
+function galleryAllPhotos(){
+  var g=galleryNormalizeAll(),out=[];
+  g.items.forEach(function(x,i){out.push({item:x,folder:null,index:i})});
+  g.folders.forEach(function(f){f.items.forEach(function(x,i){out.push({item:x,folder:f.id,index:i})})});
+  return out;
+}
+function galleryFormatDate(ts){var d=new Date(ts||Date.now());return d.getFullYear()+'. '+String(d.getMonth()+1).padStart(2,'0')+'. '+String(d.getDate()).padStart(2,'0')}
+
+// 폰 화면 안에서 바로 사진을 추가할 수 있는 작은 추가 패널
+function galleryOpenAdd(folderId){
+  var old=document.getElementById('sgAddSheet'); if(old) old.remove();
+  var host=document.getElementById('phoneScreen'); if(!host)return;
+  var sheet=document.createElement('div'); sheet.id='sgAddSheet'; sheet.className='sg-add-sheet';
+  sheet.innerHTML='<div class="sg-add-panel"><div class="sg-add-title">사진 추가</div><div class="sg-add-desc">휴대폰 안에서 바로 여러 장을 추가할 수 있어요.</div><label class="sg-add-file"><span>📷 사진 선택</span><input id="galleryAddFilesInline" type="file" accept="image/*" multiple></label><div id="sgAddNames" class="sg-add-names">선택된 사진 없음</div><div class="sg-add-buttons"><button type="button" onclick="galleryCloseAdd()">취소</button><button type="button" class="primary" onclick="submitGalleryAddInline('+galleryArg(folderId||'')+')">추가하기</button></div></div>';
+  host.appendChild(sheet);
+  var inp=document.getElementById('galleryAddFilesInline');
+  if(inp) inp.addEventListener('change',function(){var n=Array.from(inp.files||[]).map(function(x){return x.name});document.getElementById('sgAddNames').textContent=n.length?n.length+'장 선택됨: '+n.slice(0,2).join(', ')+(n.length>2?' …':''):'선택된 사진 없음';});
+}
+function galleryCloseAdd(){var x=document.getElementById('sgAddSheet');if(x)x.remove()}
+function submitGalleryAddInline(folderId){
+  var input=document.getElementById('galleryAddFilesInline'),fs=Array.from((input&&input.files)||[]);
+  if(!fs.length){alert('사진을 선택해주세요.');return;}
+  var g=galleryNormalizeAll(),target=folderId?galleryFindFolder(folderId):null,arr=target?target.items:g.items,left=fs.length;
+  fs.forEach(function(f){readImageOriginal(f,function(img){if(img)arr.push({image:img,liked:false,createdAt:Date.now()});left--;if(left===0){saveToFirebase();galleryCloseAdd();renderPhone();}})});
+}
+function submitGalleryAdd(folderId){submitGalleryAddInline(folderId)}
+function openGalleryFolderCreate(){showPhoneModal({title:'새 앨범 만들기',desc:'사진을 모아둘 앨범 이름을 입력해주세요.',input:true,placeholder:'예: 일러스트 / 2026 여름',confirmText:'만들기',onConfirm:function(name){name=(name||'').trim();if(!name)return;var g=galleryData();g.folders.push({id:'gf-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:name,items:[],createdAt:Date.now()});saveToFirebase();galleryNav('collections')}})}
+function deleteGalleryFolder(id){showPhoneModal({title:'앨범 삭제',desc:'앨범과 안의 사진을 모두 삭제할까요?',confirmText:'삭제',confirmClass:'danger',onConfirm:function(){var g=galleryData();g.folders=g.folders.filter(function(f){return f.id!==id});saveToFirebase();galleryNav('collections')}})}
+function galleryToggleLike(folderId,i){
+  var g=galleryNormalizeAll(),arr=folderId?((galleryFindFolder(folderId)||{}).items||[]):g.items,x=arr[i];if(!x)return;
+  x=galleryNormalizeItem(x);arr[i]=x;x.liked=!x.liked;x.likedAt=x.liked?Date.now():0;saveToFirebase();
+  if(window._galleryViewerOpen) galleryViewer(folderId,i); else renderPhone();
+}
+function galleryCurrentItem(){
+  if(!window._galleryViewerOpen)return null;
+  var folderId=window._galleryViewerOpen.folderId,i=window._galleryViewerOpen.index,g=galleryNormalizeAll(),arr=folderId?((galleryFindFolder(folderId)||{}).items||[]):g.items;
+  if(!arr[i])return null;return {item:arr[i],arr:arr};
+}
+function galleryViewer(folderId,i){
+  var g=galleryNormalizeAll(),arr=folderId?((galleryFindFolder(folderId)||{}).items||[]):g.items;
+  if(i<0||i>=arr.length)return;
+  arr=arr.map(galleryNormalizeItem);
+  window._galleryViewerOpen={folderId:folderId||'',index:i};
+  window._galleryZoom=1; window._galleryPanX=0; window._galleryPanY=0; window._galleryFullscreen=false;
+  var s=document.getElementById('phoneScreen');
+  var thumbs=arr.map(function(y,j){
+    return '<button type="button" class="sg-thumb '+(j===i?'active':'')+'" data-gallery-index="'+j+'" onclick="galleryViewer('+galleryArg(folderId||'')+','+j+')" title="'+(j+1)+'번 사진"><img src="'+galleryEscape(y.image)+'" draggable="false" alt=""></button>';
+  }).join('');
+  s.innerHTML='<div id="galleryViewerRoot" class="sg-gallery-viewer">'+
+    '<div class="sg-viewer-top"><button type="button" class="sg-viewer-back" onclick="galleryBack()">‹ 목록</button></div>'+
+    '<div id="galleryViewerStage" class="sg-viewer-stage"><img id="galleryViewerImage" src="'+galleryEscape(arr[i].image)+'" draggable="false" alt="사진"></div>'+
+    '<div id="galleryThumbRow" class="sg-thumb-row">'+thumbs+'</div>'+
+    '<div class="sg-viewer-actions"><button type="button" class="sg-viewer-action '+(arr[i].liked?'liked':'')+'" onclick="galleryToggleLike('+galleryArg(folderId||'')+','+i+')" title="즐겨찾기">'+(arr[i].liked?'♥':'♡')+'</button><button type="button" class="sg-viewer-action" onclick="galleryAddCurrentToAlbum()" title="앨범에 추가"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="23" height="23"><path d="M4 7.5h6l1.8 2H20v9H4z"/><path d="M12 12v4M10 14h4"/></svg></button><button type="button" class="sg-viewer-action" onclick="deleteGalleryItem('+galleryArg(folderId||'')+','+i+')" title="삭제">🗑</button></div>'+
+  '</div>';
+  var row=document.getElementById('galleryThumbRow'),active=row&&row.querySelector('.sg-thumb.active');
+  if(active) setTimeout(function(){row.scrollLeft=Math.max(0,active.offsetLeft-row.clientWidth/2+active.offsetWidth/2);},0);
+  galleryBindViewerStage(arr,folderId||'',i);
+}
+function galleryBindViewerStage(arr,folderId,i){
+  var root=document.getElementById('galleryViewerRoot'),stage=document.getElementById('galleryViewerStage'),im=document.getElementById('galleryViewerImage');if(!root||!stage||!im)return;
+  var sx=0,sy=0,lastX=0,lastY=0,moved=false,pointerId=null,downTime=0;
+  function apply(){
+    im.style.transform='translate3d('+window._galleryPanX+'px,'+window._galleryPanY+'px,0) scale('+window._galleryZoom+')';
+    stage.classList.toggle('zoomed',window._galleryZoom>1);
+    stage.classList.toggle('fullscreen',!!window._galleryFullscreen);
+    root.classList.toggle('is-fullscreen',!!window._galleryFullscreen);
+  }
+  function enterImmersive(){
+    root.classList.remove('initial-clean');
+    window._galleryFullscreen=true;
+    window._galleryZoom=1;
+    window._galleryPanX=0; window._galleryPanY=0;
+    apply();
+  }
+  function exitImmersive(){
+    window._galleryFullscreen=false;
+    window._galleryZoom=1;
+    window._galleryPanX=0; window._galleryPanY=0;
+    root.classList.remove('initial-clean');
+    apply();
+  }
+  stage.addEventListener('wheel',function(e){
+    e.preventDefault();
+    var next=Math.max(1,Math.min(6,(window._galleryZoom||1)+(e.deltaY<0?.25:-.25)));
+    window._galleryZoom=next;
+    if(next===1){window._galleryPanX=0;window._galleryPanY=0;}
+    apply();
+  },{passive:false});
+  stage.addEventListener('pointerdown',function(e){
+    if(e.button!==undefined&&e.button!==0)return;
+    pointerId=e.pointerId;sx=e.clientX;sy=e.clientY;lastX=sx;lastY=sy;moved=false;downTime=Date.now();
+    try{stage.setPointerCapture(pointerId)}catch(_){}
+  });
+  stage.addEventListener('pointermove',function(e){
+    if(pointerId!==e.pointerId)return;
+    var dx=e.clientX-lastX,dy=e.clientY-lastY;
+    if(Math.abs(e.clientX-sx)>7||Math.abs(e.clientY-sy)>7)moved=true;
+    if(window._galleryZoom>1){window._galleryPanX+=dx;window._galleryPanY+=dy;apply();stage.classList.add('dragging');}
+    lastX=e.clientX;lastY=e.clientY;
+  });
+  stage.addEventListener('pointerup',function(e){
+    if(pointerId!==e.pointerId)return;
+    try{stage.releasePointerCapture(pointerId)}catch(_){}
+    pointerId=null;stage.classList.remove('dragging');
+    var dx=e.clientX-sx,dy=e.clientY-sy,dt=Date.now()-downTime;
+    if(moved&&window._galleryZoom===1&&Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)&&dt<900){
+      if(dx<0&&i<arr.length-1)galleryViewer(folderId,i+1);else if(dx>0&&i>0)galleryViewer(folderId,i-1);return;
+    }
+    if(!moved&&dt<500){
+      if(window._galleryFullscreen) exitImmersive();
+      else enterImmersive();
+    }
+  });
+  stage.addEventListener('pointercancel',function(){pointerId=null;stage.classList.remove('dragging')});
+  stage.addEventListener('dblclick',function(e){e.preventDefault();if(window._galleryZoom>1){window._galleryZoom=1;window._galleryPanX=0;window._galleryPanY=0;}else{window._galleryZoom=2;}apply()});
+  document.onkeydown=function(e){
+    if(e.key==='Escape'&&window._galleryFullscreen){exitImmersive();return}
+    if(e.key==='ArrowRight'&&!window._galleryFullscreen&&i<arr.length-1)galleryViewer(folderId,i+1);
+    if(e.key==='ArrowLeft'&&!window._galleryFullscreen&&i>0)galleryViewer(folderId,i-1);
+  };
+  apply();
+}
+function galleryZoomApply(){var im=document.getElementById('galleryViewerImage');if(!im)return;im.style.transform='translate3d('+window._galleryPanX+'px,'+window._galleryPanY+'px,0) scale('+window._galleryZoom+')'}
+function galleryZoomIn(){window._galleryZoom=Math.min(5,(window._galleryZoom||1)+.25);galleryZoomApply()}
+function galleryZoomOut(){window._galleryZoom=Math.max(1,(window._galleryZoom||1)-.25);if(window._galleryZoom===1){window._galleryPanX=0;window._galleryPanY=0}galleryZoomApply()}
+function galleryZoomToggle(){window._galleryZoom=window._galleryZoom>1?1:2;if(window._galleryZoom===1){window._galleryPanX=0;window._galleryPanY=0}galleryZoomApply()}
+function galleryZoomReset(){window._galleryZoom=1;window._galleryPanX=0;window._galleryPanY=0;galleryZoomApply()}
+function galleryAddCurrentToAlbum(){
+  var cur=galleryCurrentItem(),g=galleryNormalizeAll();
+  if(!cur||!cur.item)return;
+  if(!g.folders.length){openGalleryFolderCreate();return;}
+  var old=document.getElementById('sgAlbumPicker');if(old)old.remove();
+  var host=document.getElementById('phoneScreen');if(!host)return;
+  var html=g.folders.map(function(f){return '<button type="button" class="sg-picker-option" onclick="galleryConfirmAddToAlbum('+galleryArg(f.id)+')"><span class="sg-picker-folder">▱</span><span>'+galleryEscape(f.name)+'</span><small>'+(f.items||[]).length+'장</small></button>';}).join('');
+  var sheet=document.createElement('div');sheet.id='sgAlbumPicker';sheet.className='sg-add-sheet';
+  sheet.innerHTML='<div class="sg-add-panel sg-picker-panel"><div class="sg-add-title">앨범에 추가</div><div class="sg-add-desc">현재 보고 있는 사진을 넣을 앨범을 선택하세요.</div><div class="sg-picker-list">'+html+'</div><button type="button" class="sg-add-cancel" onclick="document.getElementById(\'sgAlbumPicker\').remove()">취소</button></div>';
+  host.appendChild(sheet);
+}
+function galleryConfirmAddToAlbum(folderId){
+  var cur=galleryCurrentItem(),f=galleryFindFolder(folderId);if(!cur||!f)return;
+  var exists=f.items.some(function(x){return x&&x.image===cur.item.image;});
+  if(!exists){f.items.push(galleryNormalizeItem({image:cur.item.image,liked:cur.item.liked,createdAt:Date.now()}));saveToFirebase();}
+  var p=document.getElementById('sgAlbumPicker');if(p)p.remove();
+  alert(exists?'이미 이 앨범에 들어있는 사진이에요.':'앨범에 사진을 추가했어요.');
+}
+function deleteGalleryItem(folderId,i){showPhoneModal({title:'사진 삭제',desc:'이 사진을 삭제할까요?',confirmText:'삭제',confirmClass:'danger',onConfirm:function(){var g=galleryNormalizeAll(),arr=folderId?((galleryFindFolder(folderId)||{}).items||[]):g.items;arr.splice(i,1);window._galleryViewerOpen=null;saveToFirebase();folderId?galleryFolder(folderId):galleryNav('photos')}})}
+function galleryPhotoCard(x,i,folderId){x=galleryNormalizeItem(x);return '<button type="button" class="sg-photo-card" onclick="galleryViewer('+galleryArg(folderId||'')+','+i+')"><img src="'+galleryEscape(x.image)+'" loading="lazy" draggable="false"></button>'}
+function renderGallery(){
+  var s=document.getElementById('phoneScreen'),g=galleryNormalizeAll(),view=phoneState.galleryView||'photos';
+  if(view==='folder'){var f=galleryFindFolder(phoneState.galleryFolderId);if(!f){galleryNav('collections');return}return renderGalleryFolder(f)}
+  var all=g.items||[],photos=all.map(function(x,i){return galleryPhotoCard(x,i,'')}).join('');
+  if(!photos)photos='<div class="sg-empty">사진이 없습니다.<br><small>오른쪽 위 + 버튼으로 사진을 추가해보세요.</small></div>';
+  var favs=galleryAllPhotos().filter(function(z){return z.item&&z.item.liked;}).sort(function(a,b){return (b.item.likedAt||0)-(a.item.likedAt||0)});
+  var favoriteAlbum=favs.length?'<button class="sg-album-card" onclick="galleryNav(\'favorites\')"><div class="sg-album-cover"><img src="'+galleryEscape(favs[0].item.image)+'" loading="lazy"></div><div class="sg-album-name">즐겨찾기</div><div class="sg-album-count">'+favs.length+'장</div></button>':'';
+  var folders=(g.folders||[]).map(function(f){var cover=(f.items&&f.items[0])||null;return '<button class="sg-album-card" onclick="galleryFolder('+galleryArg(f.id)+')"><div class="sg-album-cover">'+(cover?'<img src="'+galleryEscape(cover.image)+'" loading="lazy">':'<span class="sg-album-empty-icon">▱</span>')+'</div><div class="sg-album-name">'+galleryEscape(f.name)+'</div><div class="sg-album-count">'+((f.items||[]).length)+'장</div></button>'}).join('');
+  var createAlbum='<button type="button" class="sg-album-card sg-create-album-card" onclick="openGalleryFolderCreate()"><div class="sg-album-cover sg-create-album-cover"><span>＋</span></div><div class="sg-album-name">앨범 추가</div><div class="sg-album-count">새 앨범 만들기</div></button>';
+  var favoriteMain='';
+  var content=view==='collections'?'<div class="sg-album-grid">'+favoriteAlbum+folders+createAlbum+'</div>':view==='favorites'?'<div class="sg-photo-grid">'+(favs.map(function(z){return galleryPhotoCard(z.item,z.index,z.folder||'')}).join('')||'<div class="sg-empty">즐겨찾기한 사진이 없습니다.</div>')+'</div>':'<div>'+favoriteMain+'<div class="sg-photo-grid">'+photos+'</div></div>';
+  s.innerHTML='<div class="sg-gallery-home">'+
+    '<div class="sg-gallery-header"><div class="sg-header-row"><button class="sg-header-back" onclick="galleryBack()">‹</button><b>'+ (view==='collections'?'앨범':'사진') +'</b><div class="sg-header-spacer"></div><button class="sg-header-icon" onclick="'+(view==='collections'?'openGalleryFolderCreate()':'galleryOpenAdd(\'\')')+'" title="'+(view==='collections'?'앨범 추가':'사진 추가')+'">＋</button></div></div>'+
+    '<div class="sg-gallery-content">'+content+'</div>'+
+    '<div class="sg-bottom-tabs"><button class="'+(view==='photos'?'active':'')+'" onclick="galleryNav(\'photos\')"><span class="sg-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="8" cy="9" r="1.5"/><path d="M5.5 17l4.2-4.3 3.1 3 2.2-2.2 3.5 3.5"/></svg></span><b>사진</b></button><button class="'+(view==='collections'?'active':'')+'" onclick="galleryNav(\'collections\')"><span class="sg-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5h6l1.8 2H20v9H4z"/><path d="M4 7.5V6h5l1.5 1.5"/><path d="M6.5 12h11" opacity=".35"/></svg></span><b>앨범</b></button></div>'+
+  '</div>';
+}
+function renderGalleryFolder(f){
+  var s=document.getElementById('phoneScreen'),items=f.items||[],photos=items.map(function(x,i){return galleryPhotoCard(x,i,f.id)}).join('');
+  if(!photos)photos='<div class="sg-empty">이 앨범은 비어 있습니다.<br><small>위의 + 버튼으로 사진을 추가하세요.</small></div>';
+  s.innerHTML='<div class="sg-gallery-home"><div class="sg-gallery-header"><div class="sg-header-row"><button class="sg-header-back" onclick="galleryNav(\'collections\')">‹</button><div class="sg-folder-title"><b>'+galleryEscape(f.name)+'</b><span>'+items.length+'장</span></div><div class="sg-header-spacer"></div><button class="sg-header-icon" onclick="galleryOpenAdd('+galleryArg(f.id)+')">＋</button><button class="sg-header-icon" onclick="deleteGalleryFolder('+galleryArg(f.id)+')">⋮</button></div></div><div class="sg-gallery-content"><div class="sg-photo-grid">'+photos+'</div></div></div>';
+}
+function addGalleryPhoto(e,folderId){var fs=Array.from(e.target.files||[]);if(!fs.length)return;var g=galleryNormalizeAll(),target=folderId?galleryFindFolder(folderId):null,arr=target?target.items:g.items,left=fs.length;fs.forEach(function(f){readImageOriginal(f,function(img){if(img)arr.push({image:img,liked:false,createdAt:Date.now()});left--;if(left===0){saveToFirebase();renderPhone()}})});e.target.value=''}
+
+/* ==================== 💬 명언/대사 인용구 블록 ==================== */
+
+// 명언 블록 더블클릭 수정 팝업
+function openQuoteEditPopup(uid) {
+  var block = document.getElementById(uid); if(!block) return;
+  var style = block.getAttribute('data-qstyle') || 'line';
+  var textEl = block.querySelector('div[style*="font-size:15px"]');
+  var sourceEl = block.querySelector('div[style*="font-size:12px"]');
+  var currentText = textEl ? textEl.textContent.trim() : '';
+  var currentSource = sourceEl ? sourceEl.textContent.replace(/^—\s*/,'').trim() : '';
+  // 현재 색상 추출
+  var currentColor = 'var(--accent)';
+  if(style === 'line') { var m = block.style.borderLeft && block.style.borderLeft.match(/#[0-9a-fA-F]{6}/); if(m) currentColor = m[0]; }
+  else if(style === 'box') { var m2 = block.style.border && block.style.border.match(/#[0-9a-fA-F]{6}/); if(m2) currentColor = m2[0]; }
+  var modal = document.getElementById('modalWindowContent');
+  modal.innerHTML =
+    '<div class="modal-title">💬 명언 / 대사 블록 수정</div>' +
+    '<div class="modal-body-form">' +
+      '<div class="form-group"><label class="form-label">대사 / 명언 내용</label><textarea id="qEditText" class="form-input" rows="3" style="resize:none">' + currentText.replace(/</g,'&lt;') + '</textarea></div>' +
+      '<div class="form-group"><label class="form-label">출처 / 상황 (선택)</label><input type="text" id="qEditSource" class="form-input" value="' + currentSource.replace(/"/g,'&quot;') + '"></div>' +
+      '<div class="form-group"><label class="form-label">강조색</label>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<input type="color" id="qEditColorPicker" value="' + currentColor + '" style="width:36px;height:36px;border:1px solid var(--border2);border-radius:6px;padding:2px;cursor:pointer" oninput="document.getElementById(\'qEditColorHex\').value=this.value">' +
+          '<input type="text" id="qEditColorHex" value="' + currentColor + '" maxlength="7" style="flex:1;padding:8px 12px;border:1px solid var(--border2);border-radius:6px;font-size:14px;background:var(--bg);color:var(--text)" oninput="var v=this.value;if(/^#[0-9a-fA-F]{6}$/.test(v)){document.getElementById(\'qEditColorPicker\').value=v;}">' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="modal-footer">' +
+      '<button class="btn" style="border-color:#fca5a5;color:#dc2626" onclick="document.getElementById(\'' + uid + '\').remove();closeGlobalModal()">🗑 삭제</button>' +
+      '<button class="btn" onclick="closeGlobalModal()">취소</button>' +
+      '<button class="btn primary" onclick="applyQuoteEdit(\'' + uid + '\',\'' + style + '\')">저장</button>' +
+    '</div>';
+  document.getElementById('globalModalOverlay').style.display = 'flex';
+}
+function applyQuoteEdit(uid, style) {
+  var block = document.getElementById(uid); if(!block) return;
+  var text = document.getElementById('qEditText').value.trim(); if(!text) return;
+  var source = document.getElementById('qEditSource').value.trim();
+  var hexEl = document.getElementById('qEditColorHex');
+  var color = (hexEl && /^#[0-9a-fA-F]{6}$/.test(hexEl.value)) ? hexEl.value : document.getElementById('qEditColorPicker').value;
+  var sourceHtml = source ? '<div style="font-size:12px;color:'+color+';opacity:0.8;margin-top:6px;font-style:normal">— '+source+'</div>' : '';
+  // 스타일 별 내용 재구성
+  var inner = '';
+  if(style === 'line') {
+    block.style.borderLeft = '4px solid '+color;
+    inner = '<div class="quote-del-btn" onclick="this.parentElement.remove()" style="display:none;position:absolute;top:6px;right:8px;font-size:11px;color:#dc2626;cursor:pointer;background:none;border:none;padding:2px 6px;border-radius:4px">✕ 삭제</div><div style="font-size:15px;color:var(--text);line-height:1.7;font-style:italic">'+text+'</div>'+sourceHtml;
+  } else if(style === 'box') {
+    block.style.borderColor = color;
+    inner = '<div class="quote-del-btn" onclick="this.parentElement.remove()" style="display:none;position:absolute;top:6px;right:8px;font-size:11px;color:#dc2626;cursor:pointer;background:none;border:none;padding:2px 6px;border-radius:4px">✕ 삭제</div><div style="font-size:15px;color:var(--text);line-height:1.7">'+text+'</div>'+sourceHtml;
+  } else {
+    inner = '<div class="quote-del-btn" onclick="this.parentElement.remove()" style="display:none;position:absolute;top:6px;right:8px;font-size:11px;color:#dc2626;cursor:pointer;background:none;border:none;padding:2px 6px;border-radius:4px">✕ 삭제</div><div style="font-size:28px;color:'+color+';line-height:0.5;margin-bottom:8px">"</div><div style="font-size:15px;color:var(--text);line-height:1.7;font-style:italic">'+text+'</div><div style="font-size:28px;color:'+color+';line-height:0.5;margin-top:8px">"</div>'+sourceHtml;
+  }
+  block.innerHTML = inner;
+  // 편집 모드면 삭제 버튼 즉시 표시
+  if(isCharacterEditMode) { var dBtn = block.querySelector('.quote-del-btn'); if(dBtn) dBtn.style.display = 'block'; }
+  closeGlobalModal();
+}
+
+function openQuoteBlockInsertModal() {
+  saveSelectionCacheRange();
+  var activeBlock = document.querySelector('.wiki-editable-block.edit-active');
+  if(!activeBlock) return alert('편집 중인 텍스트 블록을 먼저 클릭하세요.');
+  window._quoteTargetBlock = activeBlock.id;
+  var modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div class="modal-title">💬 명언 / 대사 블록 삽입</div>
+    <div class="modal-body-form">
+      <div class="form-group"><label class="form-label">대사 / 명언 내용</label><textarea id="quoteText" class="form-input" rows="3" style="resize:none" placeholder="여기에 대사나 명언을 입력하세요..."></textarea></div>
+      <div class="form-group"><label class="form-label">출처 / 상황 (선택)</label><input type="text" id="quoteSource" class="form-input" placeholder="예: 1화 독백, 이름에게"></div>
+      <div class="form-group"><label class="form-label">스타일</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px" id="quoteStylePicker">
+          <div onclick="selectQuoteStyle('line')" id="qsLine" style="padding:10px;border:2px solid var(--accent);border-radius:8px;cursor:pointer;text-align:center;background:var(--accent-bg)">
+            <div style="border-left:3px solid var(--accent);padding-left:8px;font-size:12px;color:var(--text)">라인형</div>
+          </div>
+          <div onclick="selectQuoteStyle('box')" id="qsBox" style="padding:10px;border:2px solid var(--border2);border-radius:8px;cursor:pointer;text-align:center">
+            <div style="border:1px solid var(--border2);border-radius:6px;padding:4px;font-size:12px;color:var(--text)">박스형</div>
+          </div>
+          <div onclick="selectQuoteStyle('center')" id="qsCenter" style="padding:10px;border:2px solid var(--border2);border-radius:8px;cursor:pointer;text-align:center">
+            <div style="font-size:12px;color:var(--text)">〝 중앙형 〞</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">강조색 (선택)</label>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="color" id="quoteColor" value="var(--accent)" style="width:36px;height:36px;border:1px solid var(--border2);border-radius:6px;padding:2px;cursor:pointer" oninput="document.getElementById('quoteColorHex').value=this.value">
+          <input type="text" id="quoteColorHex" value="var(--accent)" maxlength="7" style="flex:1;padding:8px 12px;border:1px solid var(--border2);border-radius:6px;font-size:14px;background:var(--bg);color:var(--text)" oninput="var v=this.value;if(/^#[0-9a-fA-F]{6}$/.test(v)){document.getElementById('quoteColor').value=v;}">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeGlobalModal()">취소</button><button class="btn primary" onclick="insertQuoteBlock()">삽입</button></div>`;
+  document.getElementById('globalModalOverlay').style.display = 'flex';
+  window._quoteStyle = 'line';
+}
+function selectQuoteStyle(style) {
+  window._quoteStyle = style;
+  ['line','box','center'].forEach(function(s){
+    var el = document.getElementById('qs'+s.charAt(0).toUpperCase()+s.slice(1));
+    if(!el) return;
+    el.style.borderColor = s===style ? 'var(--accent)' : 'var(--border2)';
+    el.style.background = s===style ? 'var(--accent-bg)' : '';
+  });
+}
+function insertQuoteBlock() {
+  var text = document.getElementById('quoteText').value.trim(); if(!text) return alert('내용을 입력해주세요.');
+  var source = document.getElementById('quoteSource').value.trim();
+  var style = window._quoteStyle || 'line';
+  var hexEl = document.getElementById('quoteColorHex');
+  var color = (hexEl && /^#[0-9a-fA-F]{6}$/.test(hexEl.value)) ? hexEl.value : document.getElementById('quoteColor').value;
+  var uid = 'quote-' + Date.now();
+  var sourceHtml = source ? '<div style="font-size:12px;color:'+color+';opacity:0.8;margin-top:6px;font-style:normal">— '+source+'</div>' : '';
+  var blockHtml = '';
+  if(style === 'line') {
+    blockHtml = '<div id="'+uid+'" class="char-quote-block" data-qstyle="line" contenteditable="false" ondblclick="openQuoteEditPopup(\''+uid+'\')" style="border-left:4px solid '+color+';padding:12px 16px;margin:14px 0;background:var(--accent-bg);border-radius:0 8px 8px 0;position:relative;cursor:pointer"><div class="quote-del-btn" onclick="this.parentElement.remove()" style="display:none;position:absolute;top:6px;right:8px;font-size:11px;color:#dc2626;cursor:pointer;background:none;border:none;padding:2px 6px;border-radius:4px">✕ 삭제</div><div style="font-size:15px;color:var(--text);line-height:1.7;font-style:italic">'+text+'</div>'+sourceHtml+'</div>';
+  } else if(style === 'box') {
+    blockHtml = '<div id="'+uid+'" class="char-quote-block" data-qstyle="box" contenteditable="false" ondblclick="openQuoteEditPopup(\''+uid+'\')" style="border:2px solid '+color+';padding:14px 18px;margin:14px 0;border-radius:10px;position:relative;background:var(--white);cursor:pointer"><div class="quote-del-btn" onclick="this.parentElement.remove()" style="display:none;position:absolute;top:6px;right:8px;font-size:11px;color:#dc2626;cursor:pointer;background:none;border:none;padding:2px 6px;border-radius:4px">✕ 삭제</div><div style="font-size:15px;color:var(--text);line-height:1.7">'+text+'</div>'+sourceHtml+'</div>';
+  } else {
+    blockHtml = '<div id="'+uid+'" class="char-quote-block" data-qstyle="center" contenteditable="false" ondblclick="openQuoteEditPopup(\''+uid+'\')" style="text-align:center;padding:20px 24px;margin:14px 0;position:relative;cursor:pointer"><div class="quote-del-btn" onclick="this.parentElement.remove()" style="display:none;position:absolute;top:6px;right:8px;font-size:11px;color:#dc2626;cursor:pointer;background:none;border:none;padding:2px 6px;border-radius:4px">✕ 삭제</div><div style="font-size:28px;color:'+color+';line-height:0.5;margin-bottom:8px">"</div><div style="font-size:15px;color:var(--text);line-height:1.7;font-style:italic">'+text+'</div><div style="font-size:28px;color:'+color+';line-height:0.5;margin-top:8px">"</div>'+sourceHtml+'</div>';
+  }
+  closeGlobalModal();
+  var targetBlock = window._quoteTargetBlock ? document.getElementById(window._quoteTargetBlock) : null;
+  if(targetBlock) { targetBlock.innerHTML += blockHtml + '<p><br></p>'; }
+  else {
+    var fallback = document.querySelector('.wiki-editable-block.edit-active') || document.querySelector('.wiki-editable-block');
+    if(fallback) fallback.innerHTML += blockHtml + '<p><br></p>';
+  }
+}
+
+function addChatRoom() {
+  showPhoneModal({ title: '새 채팅방', input: true, placeholder: '채팅방 이름을 입력하세요', confirmText: '만들기',
+    onConfirm: function(name) {
+      if (!name || !name.trim()) return;
+      var pd = getPhoneData();
+      pd.rooms.push({ name: name.trim(), emoji: '💬', avatar: '', participants: ['나', '상대방'], messages: [], theme: { myColor: 'var(--accent)', bgColor: '#e8e8e8', sendBtnColor: 'var(--accent)' } });
+      saveToFirebase(); renderPhone();
+    }
+  });
+}
+function deleteRoom(i) {
+  showPhoneModal({ title: '채팅방 삭제', desc: '이 채팅방을 삭제할까요?', confirmText: '삭제', confirmClass: 'danger',
+    onConfirm: function() {
+      var pd = getPhoneData();
+      pd.rooms.splice(i, 1);
+      saveToFirebase(); renderPhone();
+    }
+  });
+}
+function sendMsg() {
+  var input = document.getElementById('chatInput');
+  if (!input || !input.value.trim()) return;
+  var text = input.value.trim();
+  var sender = document.getElementById('msgSender');
+  var font = document.getElementById('msgFont');
+  var color = document.getElementById('msgColor');
+  var now = new Date();
+  var time = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  var pd = getPhoneData();
+  var room = pd.rooms[phoneState.currentRoom];
+  if (!room.messages) room.messages = [];
+  room.messages.push({ text: text, sender: sender ? sender.value : '나', time: time, fontFamily: font ? font.value : '', color: color ? color.value : '' });
+  input.value = '';
+  saveToFirebase(); renderChatRoom();
+}
+function sendImageMsg(e) {
+  if (!e.target.files[0]) return;
+  var sender = document.getElementById('msgSender');
+  var now = new Date();
+  var time = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  compressFile(e.target.files[0], 600, 600, 0.75, function(dataUrl) {
+    var pd = getPhoneData();
+    var room = pd.rooms[phoneState.currentRoom];
+    if (!room.messages) room.messages = [];
+    room.messages.push({ image: dataUrl, text: '', sender: sender ? sender.value : '나', time: time });
+    saveToFirebase(); renderChatRoom();
+  });
+}
+function addDateDivider() {
+  var now = new Date();
+  var defaultDate = now.getFullYear()+'년 '+(now.getMonth()+1)+'월 '+now.getDate()+'일';
+  showPhoneModal({ title: '날짜 구분선', input: true, placeholder: defaultDate, confirmText: '추가',
+    onConfirm: function(val) {
+      var date = (val && val.trim()) ? val.trim() : defaultDate;
+      var pd = getPhoneData();
+      var room = pd.rooms[phoneState.currentRoom];
+      if (!room.messages) room.messages = [];
+      // 다음 메시지에 날짜가 붙도록 마커 역할 메시지 추가
+      room.messages.push({ _dateDivider: true, date: date, sender: '__date__', text: '', time: '' });
+      saveToFirebase(); renderChatRoom();
+    }
+  });
+}
+function editDateDivider(mi) {
+  var pd = getPhoneData();
+  var room = pd.rooms[phoneState.currentRoom];
+  var msg = room.messages[mi];
+  if (!msg || !msg._dateDivider) return;
+  showPhoneModal({ title: '날짜 수정 / 삭제', input: true, placeholder: msg.date, confirmText: '저장',
+    extraBtn: { text: '🗑 삭제', cls: 'danger', action: function() {
+      pd.rooms[phoneState.currentRoom].messages.splice(mi, 1);
+      saveToFirebase(); renderChatRoom();
+    }},
+    onConfirm: function(val) {
+      if (val && val.trim()) msg.date = val.trim();
+      saveToFirebase(); renderChatRoom();
+    }
+  });
+}
+function deleteMsg(i) {
+  showPhoneModal({ title: '메시지 삭제', desc: '이 메시지를 삭제할까요?', confirmText: '삭제', confirmClass: 'danger',
+    onConfirm: function() {
+      var pd = getPhoneData();
+      pd.rooms[phoneState.currentRoom].messages.splice(i, 1);
+      saveToFirebase(); renderChatRoom();
+    }
+  });
+}
+function saveChatSettings() {
+  var pd = getPhoneData();
+  var room = pd.rooms[phoneState.currentRoom];
+  room.name = document.getElementById('sRoomName').value;
+  room.emoji = document.getElementById('sRoomEmoji').value;
+  if (window._tmpRoomAvatar) { room.avatar = window._tmpRoomAvatar; window._tmpRoomAvatar = null; }
+  room.participants = document.getElementById('sParticipants').value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+  room.theme = { myColor: document.getElementById('sMyColor').value, bgColor: document.getElementById('sBgColor').value, sendBtnColor: document.getElementById('sSendColor').value };
+  saveToFirebase(); phoneState.screen = 'chat'; renderPhone();
+}
+
+</script>
+
+<div style="position:fixed;bottom:10px;right:14px;z-index:9999;display:flex;flex-direction:column;align-items:flex-end;gap:2px;pointer-events:none;opacity:0.35;font-size:11px;color:var(--muted);font-family:'Noto Sans KR',sans-serif;letter-spacing:0.03em">
+  <span>@파도베이글</span>
+  <a href="https://www.postype.com/profile/@hqkrk4" target="_blank" style="color:inherit;text-decoration:none;pointer-events:auto">postype.com/profile/@hqkrk4</a>
+</div>
+
+</body>
+</html>

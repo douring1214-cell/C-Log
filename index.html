@@ -3663,3 +3663,36 @@ function saveChatSettings() {
 
 </body>
 </html>
+
+<!-- Firebase SDK 스크립트 추가 -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  // 1단계에서 복사한 firebaseConfig를 입력합니다.
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  // Firebase 초기화
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+
+  // 예시: 캐릭터 추가 시 Firebase에 저장
+  function saveCharacter(charData) {
+    database.ref('characters/' + charData.id).set(charData);
+  }
+
+  // 예시: 데이터 변경 감지 (친구가 추가/수정 시 내 화면도 자동 업데이트)
+  database.ref('characters').on('value', (snapshot) => {
+    const data = snapshot.val();
+    // 화면의 캐릭터 목록을 업데이트하는 함수 호출
+    updateCharacterUI(data);
+  });
+</script>

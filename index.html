@@ -3664,58 +3664,44 @@ function saveChatSettings() {
 </body>
 </html>
 
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>실시간 공유 앱</title>
-</head>
-<body>
-  <h1>실시간 데이터 공유</h1>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+// 1. Firebase 설정 및 초기화
+const firebaseConfig = { /* 본인 organize 프로젝트의 firebaseConfig */ };
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// 2. 캐릭터 추가 함수 (나 또는 친구가 버튼을 누를 때 실행)
+function addCharacter(charName, charRole) {
+  const characterListRef = ref(db, 'characters');
+  // push()를 쓰면 친구와 내가 동시에 추가해도 데이터가 덮어씌워지지 않고 목록으로 쌓입니다.
+  push(characterListRef, {
+    name: charName,
+    role: charRole,
+    createdAt: Date.now()
+  });
+}
+
+// 3. 실시간 캐릭터 목록 수신 (친구가 캐릭터를 추가하면 내 화면도 자동 갱신)
+const characterListRef = ref(db, 'characters');
+onValue(characterListRef, (snapshot) => {
+  const data = snapshot.val();
   
-  <!-- 친구가 입력할 창과 버튼 -->
-  <input type="text" id="msgInput" placeholder="내용 입력">
-  <button onclick="sendData()">전송</button>
+  // 기존 화면의 캐릭터 목록을 초기화하고 다시 그리기
+  const container = document.getElementById('character-list-container');
+  container.innerHTML = ''; 
 
-  <!-- 내 화면에 띄울 영역 -->
-  <p>친구가 쓴 내용: <span id="display"></span></p>
-
-  <!-- Firebase SDK 및 실시간 연동 스크립트 -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-    // 1. organize 프로젝트 설정 (프로젝트 설정 페이지의 firebaseConfig)
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "organize-437e5.firebaseapp.com",
-      databaseURL: "https://organize-437e5-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "organize-437e5",
-      storageBucket: "organize-437e5.appspot.com",
-      messagingSenderId: "...",
-      appId: "..."
-    };
-
-    // Firebase 초기화
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // 2. 친구가 버튼 눌러 데이터 쓸 때 호출되는 함수
-    window.sendData = function() {
-      const text = document.getElementById('msgInput').value;
-      set(ref(db, 'shared_data/'), {
-        message: text
-      });
-    };
-
-    // 3. 데이터 변경 감지 (나와 친구 화면 모두 실시간 업데이트)
-    const dataRef = ref(db, 'shared_data/');
-    onValue(dataRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        document.getElementById('display').innerText = data.message;
-      }
+  if (data) {
+    // 저장된 모든 캐릭터를 반복문으로 화면에 생성
+    Object.keys(data).forEach((key) => {
+      const char = data[key];
+      
+      const charCard = document.createElement('div');
+      charCard.className = 'character-card';
+      charCard.innerHTML = `<h3>${char.name}</h3><p>${char.role}</p>`;
+      
+      container.appendChild(charCard);
     });
-  </script>
-</body>
-</html>
+  }
+});

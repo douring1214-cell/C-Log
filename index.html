@@ -3663,3 +3663,59 @@ function saveChatSettings() {
 
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>실시간 공유 앱</title>
+</head>
+<body>
+  <h1>실시간 데이터 공유</h1>
+  
+  <!-- 친구가 입력할 창과 버튼 -->
+  <input type="text" id="msgInput" placeholder="내용 입력">
+  <button onclick="sendData()">전송</button>
+
+  <!-- 내 화면에 띄울 영역 -->
+  <p>친구가 쓴 내용: <span id="display"></span></p>
+
+  <!-- Firebase SDK 및 실시간 연동 스크립트 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // 1. organize 프로젝트 설정 (프로젝트 설정 페이지의 firebaseConfig)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "organize-437e5.firebaseapp.com",
+      databaseURL: "https://organize-437e5-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "organize-437e5",
+      storageBucket: "organize-437e5.appspot.com",
+      messagingSenderId: "...",
+      appId: "..."
+    };
+
+    // Firebase 초기화
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // 2. 친구가 버튼 눌러 데이터 쓸 때 호출되는 함수
+    window.sendData = function() {
+      const text = document.getElementById('msgInput').value;
+      set(ref(db, 'shared_data/'), {
+        message: text
+      });
+    };
+
+    // 3. 데이터 변경 감지 (나와 친구 화면 모두 실시간 업데이트)
+    const dataRef = ref(db, 'shared_data/');
+    onValue(dataRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        document.getElementById('display').innerText = data.message;
+      }
+    });
+  </script>
+</body>
+</html>
